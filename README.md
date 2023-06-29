@@ -6,7 +6,7 @@ Whether we like it or not, we debug things by putting print statements around.
 
 Example use-case could be plotting distribution of weights, gradients and activations for layers in NN.
 
-TODO: insert screenshots here.
+![self-attention weights](static/fewlines_self_attention.png)
 
 While created originally to plot distributions of weights/gradients it can be also used to visualize time series and
 is not restricted to ML use cases, obviously. Can be used to show latency distribution, for example.
@@ -15,8 +15,6 @@ Installation:
 ```
 pip install fewlines
 ```
-
-TODO: Examples here
 
 ## TODO
 
