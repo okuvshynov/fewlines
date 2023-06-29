@@ -8,12 +8,6 @@ setup(
     description='Horizon chart in terminal to use in Python scripts.',
     long_description='Horizon chart in terminal. Useful to visualize weight/gradient distribution in compact form in the terminal, as if with a print statement.',
     packages=find_packages(),
-    install_requires=[
-    ],
+    install_requires=[],
     url='https://github.com/okuvshynov/fewlines',
-    entry_points={
-        'console_scripts': [
-            'cubestat = cubestat.cubestat:main'
-        ]
-    },
 )
