@@ -1,4 +1,8 @@
-# base function, returns a horizon-formatted string suitable for printing in the terminal
+try:
+    import numpy as np
+    has_nupmy = True
+except ImportError:
+    has_nupmy = False
 
 default_green = [-1, 150, 107, 22]
 default_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
@@ -9,51 +13,54 @@ def horizon_line(y, colors=default_green, chrs=default_blocks) -> str:
     rst = '\33[0m'
     cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in chrs]
     Y = max(y)
+    if Y == 0:
+        return chrs[0] * len(y)
     clamp = lambda v, a, b: max(a, min(v, b))
     cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
     horizon = ''.join([cell(v) for v in y])
     return horizon
 
-def _horizon_list(series, bins, shared_scale):
-    try:
-        import numpy as np
-    except ImportError:
-        raise ImportError("numpy is required to use _horizon_list.")
-    if shared_scale:
-        scale_range = (min(v.min() for _, v in series), max(v.max() for _, v in series))
-        interval = scale_range
+# returns a tuple of ('line', (x_min, x_max))
+def horizon_histogram(values, bins=40, scale_range=None):
+    if not has_nupmy:
+        raise ImportError("numpy is required to use horizon_histogram.")
+    values, bin_edges = np.histogram(values, bins, scale_range)
+    return horizon_line(values), (bin_edges[0], bin_edges[-1])
+
+def horizon_multi_histogram(series, bins, shared_scale):
+    if not has_nupmy:
+        raise ImportError("numpy is required to use horizon_multi_histogram.")
+    
+    scale_range = (min(v.min() for _, v in series), max(v.max() for _, v in series)) if shared_scale else None
+
     res = []
     for name, values in series:
-        if shared_scale:
-            hist_values, _ = np.histogram(values, bins=bins, range=scale_range)
-        else:
-            interval = (min(values), max(values))
-            hist_values, _ = np.histogram(values, bins=bins)
-        
-        res.append((name, horizon_line(y=hist_values), interval))
+        line, interval = horizon_histogram(values, bins=bins, scale_range=scale_range)
+        res.append((name, line, interval))
 
     return res
 
-def horizon_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
+def print_histogram(values, title='', bins=40, scale_range=None):
+    line, (a, b) = horizon_histogram(values, bins, scale_range)
+    print(f'{title}: {line} [{a}; {b}]')
+
+## Helper functions for torch
+
+def print_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
     weights = []
     for name, module in model.named_modules(prefix=module_prefix):
         # Check if the module has a weight attribute
         if hasattr(module, 'weight'):
-            # Get the weight tensor
-            weight = module.weight.data
-
-            # Flatten the weight tensor
-            weight_flat = weight.view(-1).cpu().numpy()
-            weights.append((name, weight_flat))
-
-    return _horizon_list(weights, bins, shared_scale)
+            weights.append((name, module.weight.data.view(-1).cpu().numpy()))
+        
+    for name, chart, (a, b) in horizon_multi_histogram(weights, bins=bins, shared_scale=shared_scale):
+        print(f'{name}: [{a:.3f}; {b:.3f}]')
+        print(f'[{chart}]')
 
 
-def horizon_torch_gradients(model, bins=80, module_prefix='', shared_scale=True):
-    try:
-        import numpy as np
-    except ImportError:
-        raise ImportError("numpy is required to use horizon_torch_gradients.")
+def print_torch_gradients(model, bins=80, module_prefix='', shared_scale=True):
+    if not has_nupmy:
+        raise ImportError("numpy is required to use print_torch_gradients.")
     grads = []
 
     for name, module in model.named_modules(prefix=module_prefix):
@@ -66,4 +73,7 @@ def horizon_torch_gradients(model, bins=80, module_prefix='', shared_scale=True)
         if grads_rec:
             grads_flat = np.concatenate(grads_rec)
             grads.append((name, grads_flat))
-    return _horizon_list(grads, bins, shared_scale)
+
+    for name, chart, (a, b) in horizon_multi_histogram(grads, bins=bins, shared_scale=shared_scale):
+        print(f'{name}: [{a:.3f}; {b:.3f}]')
+        print(f'[{chart}]')
