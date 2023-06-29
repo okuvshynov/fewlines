@@ -3,10 +3,10 @@
 default_green = [-1, 150, 107, 22]
 default_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
-def horizon(y, colors=default_green, chrs=default_blocks) -> str:
-    bg = [f'\33[48;5;{c}m' for c in colors]
-    fg = [f'\33[38;5;{c}m' for c in colors]
-    rst = '\033[0m'
+def horizon_line(y, colors=default_green, chrs=default_blocks) -> str:
+    bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors]
+    fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors]
+    rst = '\33[0m'
     cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in chrs]
     Y = max(y)
     clamp = lambda v, a, b: max(a, min(v, b))
@@ -30,10 +30,9 @@ def _horizon_list(series, bins, shared_scale):
             interval = (min(values), max(values))
             hist_values, _ = np.histogram(values, bins=bins)
         
-        res.append((name, horizon(y=hist_values), interval))
+        res.append((name, horizon_line(y=hist_values), interval))
 
     return res
-
 
 def horizon_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
     weights = []
