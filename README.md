@@ -16,9 +16,28 @@ Installation:
 pip install fewlines
 ```
 
+## Usage examples
+
+Minimal example:
+```
+from fewlines.horizon import horizon_line
+print(horizon_line([i for i in range(100)]))
+```
+
+![minimal](static/fewlines_minimal.png)
+
+Print distribution with default formatting:
+```
+from fewlines.horizon import print_histogram
+import numpy as np
+print_histogram(np.random.normal(size=10000))
+```
+
+![histogram](static/fewlines_hist.png)
+
+
 ## TODO
 
 * unit tests
-* examples
 * scatter-like chart
 * negative values support

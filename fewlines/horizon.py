@@ -42,7 +42,8 @@ def horizon_multi_histogram(series, bins, shared_scale):
 
 def print_histogram(values, title='', bins=40, scale_range=None):
     line, (a, b) = horizon_histogram(values, bins, scale_range)
-    print(f'{title}: {line} [{a}; {b}]')
+    title = f'{title}: ' if title != '' else ''
+    print(f'{title}{line} [{a}; {b}]')
 
 ## Helper functions for torch
 
