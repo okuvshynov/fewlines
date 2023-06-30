@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 try:
     import numpy as np
     has_nupmy = True
@@ -58,22 +60,37 @@ def print_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
         print(f'{name}: [{a:.3f}; {b:.3f}]')
         print(f'[{chart}]')
 
-
-def print_torch_gradients(model, bins=80, module_prefix='', shared_scale=True):
-    if not has_nupmy:
+def print_torch_gradients(models, bins=80, module_prefix='', shared_scale=True, rec=True):
+    try:
+        import numpy as np
+    except ImportError:
         raise ImportError("numpy is required to use print_torch_gradients.")
     grads = []
 
-    for name, module in model.named_modules(prefix=module_prefix):
-        # Check if the module has a weight attribute
-        grads_rec = []
-        for param in module.parameters():
+    if not isinstance(models, Iterable):
+        models = [models]
+
+    for model in models:
+        if rec:
+            for name, module in model.named_modules(prefix=module_prefix):
+                # Check if the module has a weight attribute
+                grads_rec = []
+                for param in module.parameters():
+                    # Get the weight tensor
+                    if param.grad is not None:
+                        grads_rec.append(param.grad.data.cpu().numpy().flatten())
+                if grads_rec:
+                    grads_flat = np.concatenate(grads_rec)
+                    grads.append((name, grads_flat))
+        else:
+            grads_rec = []
+            for param in model.parameters():
             # Get the weight tensor
-            if param.grad is not None:
-                grads_rec.append(param.grad.data.cpu().numpy().flatten())
-        if grads_rec:
-            grads_flat = np.concatenate(grads_rec)
-            grads.append((name, grads_flat))
+                if param.grad is not None:
+                    grads_rec.append(param.grad.data.cpu().numpy().flatten())
+            if grads_rec:
+                grads_flat = np.concatenate(grads_rec)
+                grads.append(('', grads_flat))
 
     for name, chart, (a, b) in horizon_multi_histogram(grads, bins=bins, shared_scale=shared_scale):
         print(f'{name}: [{a:.3f}; {b:.3f}]')

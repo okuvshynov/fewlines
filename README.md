@@ -37,7 +37,8 @@ print_histogram(np.random.normal(size=10000))
 
 
 ## TODO
-
+* more examples, including Colab
+* move torch-specific printing to separate module
 * unit tests
 * scatter-like chart
 * negative values support
