@@ -42,3 +42,4 @@ print_histogram(np.random.normal(size=10000))
 * unit tests
 * scatter-like chart
 * negative values support
+* shared y scale

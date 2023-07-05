@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fewlines',
-    version='0.0.3',
+    version='0.0.4',
     author='Oleksandr Kuvshynov',
     author_email='okuvshynov@gmail.com',
     description='Horizon chart in terminal to use in Python scripts.',

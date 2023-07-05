@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../fewlines')
 
-from horizon import horizon_line, horizon_histogram
+from horizon import horizon_line, horizon_histogram, print_histogram, print_histograms
 
 def one_char_one_color():
     print(horizon_line([0, 10, 11, 12, 0, 13], colors=[-1, 0], chrs=[' ', '#']))
@@ -32,6 +32,9 @@ def histograms():
 
     chart, domain = horizon_histogram([i for i in range (100)])
     print(f'{chart} [{domain}]')
+
+    print_histograms([('A', [10, 20, 30, 10, 20, 30]), ('B', [1, 2, 3, 0.00001])])
+    print_histograms({'A': [10, 20, 30, 10, 20, 30], 'B': [1, 2, 3, 0.00001]})
 
 if __name__ == '__main__':
     one_char_one_color()

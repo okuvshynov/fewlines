@@ -29,11 +29,11 @@ def horizon_histogram(values, bins=40, scale_range=None):
     values, bin_edges = np.histogram(values, bins, scale_range)
     return horizon_line(values), (bin_edges[0], bin_edges[-1])
 
-def horizon_multi_histogram(series, bins, shared_scale):
+def horizon_multi_histogram(series, bins=40, shared_scale=True):
     if not has_nupmy:
         raise ImportError("numpy is required to use horizon_multi_histogram.")
     
-    scale_range = (min(v.min() for _, v in series), max(v.max() for _, v in series)) if shared_scale else None
+    scale_range = (min(min(v) for _, v in series), max(max(v) for _, v in series)) if shared_scale else None
 
     res = []
     for name, values in series:
@@ -45,11 +45,18 @@ def horizon_multi_histogram(series, bins, shared_scale):
 def print_histogram(values, title='', bins=40, scale_range=None):
     line, (a, b) = horizon_histogram(values, bins, scale_range)
     title = f'{title}: ' if title != '' else ''
-    print(f'{title}{line} [{a}; {b}]')
+    print(f'{title}{line} [{a:.4g}; {b:.4g}]')
+
+def print_histograms(series, bins=40, shared_scale=True):
+    if isinstance(series, dict):
+        series = series.items()
+    for name, chart, (a, b) in horizon_multi_histogram(series, bins=bins, shared_scale=shared_scale):
+        print(f'{name}: [{a:.4g}; {b:.4g}]')
+        print(f'[{chart}]')
 
 ## Helper functions for torch
 
-def print_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
+def _print_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
     weights = []
     for name, module in model.named_modules(prefix=module_prefix):
         # Check if the module has a weight attribute
@@ -57,10 +64,10 @@ def print_torch_weights(model, bins=80, module_prefix='', shared_scale=True):
             weights.append((name, module.weight.data.view(-1).cpu().numpy()))
         
     for name, chart, (a, b) in horizon_multi_histogram(weights, bins=bins, shared_scale=shared_scale):
-        print(f'{name}: [{a:.3f}; {b:.3f}]')
+        print(f'{name}: [{a:.4g}; {b:.4g}]')
         print(f'[{chart}]')
 
-def print_torch_gradients(models, bins=80, module_prefix='', shared_scale=True, rec=True):
+def _print_torch_gradients(models, bins=80, module_prefix='', shared_scale=True, rec=True):
     try:
         import numpy as np
     except ImportError:
@@ -93,5 +100,5 @@ def print_torch_gradients(models, bins=80, module_prefix='', shared_scale=True, 
                 grads.append(('', grads_flat))
 
     for name, chart, (a, b) in horizon_multi_histogram(grads, bins=bins, shared_scale=shared_scale):
-        print(f'{name}: [{a:.3f}; {b:.3f}]')
+        print(f'{name}: [{a:.3g}; {b:.3g}]')
         print(f'[{chart}]')
