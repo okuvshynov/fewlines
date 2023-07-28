@@ -43,3 +43,4 @@ print_histogram(np.random.normal(size=10000))
 * scatter-like chart
 * negative values support
 * shared y scale
+* for boxplot: empty lines should be empty, not skipped

@@ -1,9 +1,8 @@
 import math
 
-# returns boxplot from 1 series in a list of size 'width'
-def _boxplot_chart(numbers, mn, mx, width=80):
+# returns boxplot from one series in a list of size 'width'
+def _boxplot_chart(numbers, mn, mx, width):
     if not (width > 0):
-        # TODO: raise something
         return '' 
     scale = lambda v: max(0, min(width - 1, int(width * 1.0 * (v - mn) / (mx - mn))))
     res = [' '] * width
@@ -56,25 +55,37 @@ def _axis_str(mn, mx, chart_width=80, left_margin=20):
     if left_margin <= 0:
         return '_' * chart_width + f'|{mx_text}'
     return '~' * (left_margin - len(mn_text)) + mn_text + '~' * chart_width + f'|{mx_text}'
-
-def boxplot(numbers, title='', chart_width=80, axis=True, left_margin=20):
-    mn = min(numbers)
-    mx = max(numbers)
-    res = _boxplot_line(numbers, mn, mx, title=title)
-
-    if axis:
-        return [_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin), res]
-    return [res]
  
+def global_stat(numbers, fn):
+    res = None
+    if numbers:  # check if dictionary is not empty
+        non_empty_values = [fn(v) for v in numbers.values() if v]
+        if non_empty_values:
+            res = fn(non_empty_values) 
+    return res
+
+# returns list of strings
 def boxplot_table(numbers, chart_width=80, axis=True, left_margin=20):
-    mn = min(min(v) for v in numbers.values())
-    mx = max(max(v) for v in numbers.values())
+    mn = global_stat(numbers, min)
+    mx = global_stat(numbers, max)
+
     res = []
+    if mn is None or mx is None:
+        mn, mx = 0, 0
+
+    if mn == mx:
+        mx += 1
+        mn -= 1
+
     if axis:
         res.append(_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
     for title, values in numbers.items():
         res.append(_boxplot_line(values, mn, mx, title=title, chart_width=chart_width, left_margin=left_margin))
     return res
+
+# single series
+def boxplot(numbers, title='', chart_width=80, axis=True, left_margin=20):
+    return boxplot_table({title: numbers}, chart_width, axis, left_margin)
 
 def _percentile(n, percentile):
     index = percentile * (len(n) - 1) / 100
@@ -111,4 +122,18 @@ if __name__ == '__main__':
     print()
     
     for l in boxplot([1,2], title='2 poindsjkfhkajsdhflkajsdhflkasdjhfts'):
+        print(l)
+
+    for l in boxplot([], title='empty'):
+        print(l)
+
+    for l in boxplot([1], title='single datapoint'):
+        print(l)
+    
+    for l in boxplot_table({}, chart_width=80, left_margin=20):
+        print(l)
+
+    print()
+
+    for l in boxplot_table({'a': [], 'b': []}, chart_width=80, left_margin=20):
         print(l)
