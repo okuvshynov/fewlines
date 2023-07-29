@@ -1,4 +1,5 @@
-import math
+import utils
+from layout import top_axis_str
 
 # returns boxplot from one series in a list of size 'width'
 def _boxplot_chart(numbers, mn, mx, width):
@@ -9,7 +10,7 @@ def _boxplot_chart(numbers, mn, mx, width):
     if len(numbers) == 0:
         return res
 
-    min_num, max_num, p25, p50, p75 = _compute_stats(numbers)
+    min_num, max_num, p25, p50, p75 = utils.compute_stats(numbers)
     p25i = scale(p25)
     p75i = scale(p75)
     p50i = scale(p50)
@@ -38,7 +39,7 @@ def _boxplot_chart(numbers, mn, mx, width):
 
     return res
 
-def _boxplot_line(numbers, mn, mx, title='', chart_width=80, left_margin=20):
+def _boxplot_line(numbers, mn, mx, title='', chart_width=60, left_margin=20):
     chart = _boxplot_chart(numbers, mn, mx, width=chart_width)
     if left_margin <= 0:
         left = ''
@@ -49,12 +50,6 @@ def _boxplot_line(numbers, mn, mx, title='', chart_width=80, left_margin=20):
     
     right = '|'
     return left + ''.join(chart) + right
-
-def _axis_str(mn, mx, chart_width=80, left_margin=20):
-    mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
-    if left_margin <= 0:
-        return '_' * chart_width + f'|{mx_text}'
-    return '~' * (left_margin - len(mn_text)) + mn_text + '~' * chart_width + f'|{mx_text}'
  
 def global_stat(numbers, fn):
     res = None
@@ -65,7 +60,7 @@ def global_stat(numbers, fn):
     return res
 
 # returns list of strings
-def boxplot_table(numbers, chart_width=80, axis=True, left_margin=20):
+def boxplot_table(numbers, chart_width=60, axis=True, left_margin=20):
     mn = global_stat(numbers, min)
     mx = global_stat(numbers, max)
 
@@ -78,34 +73,14 @@ def boxplot_table(numbers, chart_width=80, axis=True, left_margin=20):
         mn -= 1
 
     if axis:
-        res.append(_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
+        res.append(top_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
     for title, values in numbers.items():
         res.append(_boxplot_line(values, mn, mx, title=title, chart_width=chart_width, left_margin=left_margin))
     return res
 
 # single series
-def boxplot(numbers, title='', chart_width=80, axis=True, left_margin=20):
+def boxplot(numbers, title='', chart_width=60, axis=True, left_margin=20):
     return boxplot_table({title: numbers}, chart_width, axis, left_margin)
-
-def _percentile(n, percentile):
-    index = percentile * (len(n) - 1) / 100
-    if (len(n) - 1) % 100 == 0:
-        return sorted(n)[int(index)]
-    else:
-        lower = sorted(n)[int(index)]
-        upper = sorted(n)[int(index) + 1]
-        interpolation = index - int(index)
-        return lower + (upper - lower) * interpolation
-
-def _compute_stats(numbers):
-    numbers = sorted(numbers)  # It's better to sort the numbers only once
-    min_num = numbers[0]
-    max_num = numbers[-1]
-    p25 = _percentile(numbers, 25)
-    p50 = _percentile(numbers, 50)
-    p75 = _percentile(numbers, 75)
-
-    return min_num, max_num, p25, p50, p75
 
 if __name__ == '__main__':
     data = {
@@ -116,7 +91,7 @@ if __name__ == '__main__':
         'E': [-5, -4, -3, -2, -1, -1, -1, -1, -1, 1],
         'F': [1]
     }
-    for l in boxplot_table(data, chart_width=80, left_margin=20):
+    for l in boxplot_table(data, chart_width=40, left_margin=20):
         print(l)
 
     print()
@@ -130,10 +105,10 @@ if __name__ == '__main__':
     for l in boxplot([1], title='single datapoint'):
         print(l)
     
-    for l in boxplot_table({}, chart_width=80, left_margin=20):
+    for l in boxplot_table({}, chart_width=40, left_margin=20):
         print(l)
 
     print()
 
-    for l in boxplot_table({'a': [], 'b': []}, chart_width=80, left_margin=20):
+    for l in boxplot_table({'a': [], 'b': []}, chart_width=40, left_margin=20):
         print(l)
