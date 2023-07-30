@@ -54,16 +54,8 @@ def _boxplot_line(numbers, mn, mx, title='', chart_width=60, left_margin=20):
 
 # returns list of strings
 def boxplot_table(numbers, chart_width=60, axis=True, left_margin=20):
-    mn = utils.global_stat(numbers, min)
-    mx = utils.global_stat(numbers, max)
-
+    mn, mx = utils.global_range(numbers)
     res = []
-    if mn is None or mx is None:
-        mn, mx = 0, 0
-
-    if mn == mx:
-        mx += 1
-        mn -= 1
 
     if axis:
         res.append(top_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
@@ -85,6 +77,11 @@ if __name__ == '__main__':
         'F': [1]
     }
     for l in boxplot_table(data, chart_width=40, left_margin=20):
+        print(l)
+
+    from bar import bar_histograms
+
+    for l in bar_histograms(data, chart_width=40, left_margin=20):
         print(l)
 
     print()

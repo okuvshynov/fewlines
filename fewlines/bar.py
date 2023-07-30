@@ -18,17 +18,7 @@ def bar_line(y, chrs=default_blocks) -> str:
     return horizon
 
 def bar_histograms(numbers, chart_width=80, axis=True, left_margin=20):
-    mn = utils.global_stat(numbers, min)
-    mx = utils.global_stat(numbers, max)
-
-    res = []
-    if mn is None or mx is None:
-        mn, mx = 0, 0
-
-    if mn == mx:
-        mx += 1
-        mn -= 1
-
+    mn, mx = utils.global_range(numbers)
     res = []
 
     if axis:

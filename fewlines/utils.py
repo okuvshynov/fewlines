@@ -58,3 +58,16 @@ def global_stat(numbers, fn):
         if non_empty_values:
             res = fn(non_empty_values) 
     return res
+
+def global_range(numbers):
+    mn = global_stat(numbers, min)
+    mx = global_stat(numbers, max)
+
+    if mn is None or mx is None:
+        mn, mx = 0, 0
+
+    if mn == mx:
+        mx += 1
+        mn -= 1
+    
+    return mn, mx
