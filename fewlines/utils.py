@@ -49,3 +49,12 @@ def compute_stats(numbers):
     p75 = percentile(numbers, 75)
 
     return min_num, max_num, p25, p50, p75
+
+# for things like min/max for dict of lists
+def global_stat(numbers, fn):
+    res = None
+    if numbers:  # check if dictionary is not empty
+        non_empty_values = [fn(v) for v in numbers.values() if v]
+        if non_empty_values:
+            res = fn(non_empty_values) 
+    return res

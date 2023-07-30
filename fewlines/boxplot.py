@@ -50,19 +50,12 @@ def _boxplot_line(numbers, mn, mx, title='', chart_width=60, left_margin=20):
     
     right = '|'
     return left + ''.join(chart) + right
- 
-def global_stat(numbers, fn):
-    res = None
-    if numbers:  # check if dictionary is not empty
-        non_empty_values = [fn(v) for v in numbers.values() if v]
-        if non_empty_values:
-            res = fn(non_empty_values) 
-    return res
+
 
 # returns list of strings
 def boxplot_table(numbers, chart_width=60, axis=True, left_margin=20):
-    mn = global_stat(numbers, min)
-    mx = global_stat(numbers, max)
+    mn = utils.global_stat(numbers, min)
+    mx = utils.global_stat(numbers, max)
 
     res = []
     if mn is None or mx is None:
