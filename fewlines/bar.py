@@ -33,7 +33,7 @@ def horizon_line(y, color='green', chrs=horizon_blocks) -> str:
     horizon = ''.join([cell(v) for v in y])
     return horizon
 
-def bar_histograms(numbers, chart_width=80, axis=True, left_margin=20, color=None):
+def bar_histograms(numbers, chart_width=60, axis=True, left_margin=20, color=None):
     mn, mx = utils.global_range(numbers)
     res = []
 
