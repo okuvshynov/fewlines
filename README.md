@@ -4,7 +4,11 @@ Whether we like it or not, we debug things by putting print statements around.
 
 `fewlines` is a supplement for this, allowing to plot bar charts which only take few lines in a terminal output, but can be a very useful piece of information.
 
-Example use-case could be plotting distribution of weights, gradients and activations for layers in NN:
+Requires Unicode block characters.
+Horizon-style color output requires terminal with 256 ANSI colors.
+Monochrome version can be used for logging distributions to text files. 
+
+Example: plotting distribution of weights, gradients and activations for layers in LoRA neural net modules:
 
 ```
 === WEIGHTS ===
@@ -27,56 +31,11 @@ Example use-case could be plotting distribution of weights, gradients and activa
                V7.B|▄▇▆▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁ ▁▁   ▁▁      ▁   ▁  ▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▆▇▅|
                Q8.B|▄▇▆▅▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▂▁▂▂▂▂▂▂▂▃▃▃▄▅▆▇▄|
                V8.B|▅▇▅▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁  ▁▁ ▁▁            ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▅|
-               Q9.B|▄▇▇▅▄▃▃▂▂▂▂▂▂▂▂▂▁▂▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▁▂▂▂▂▂▂▃▃▄▄▅▇▇▄|
-               V9.B|▆▇▅▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁  ▁                      ▁▁▁▁▁▁▁▁▁▁▁▂▃▄▅▇▅|
-              Q10.B|▅▇▆▅▄▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▃▄▅▆▇▄|
-              V10.B|▅▇▆▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▁▁▁▁▁▁▁  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▆▇▆|
-              Q11.B|▅▇▆▄▃▃▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▁▂▂▃▃▄▆▇▅|
-              V11.B|▇▇▅▃▂▂▁▁▁▁▁▁▁▁▁      ▁                     ▁▁▁▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q12.B|▆▇▆▄▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▃▄▅▇▆|
-              V12.B|▇▇▅▄▂▂▁▁▁▁▁▁▁▁▁▁ ▁  ▁     ▁            ▁▁ ▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q13.B|▇▇▅▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▆|
-              V13.B|▇▇▄▃▂▂▁▁▁▁▁▁▁▁ ▁                            ▁▁▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q14.B|▆▇▅▄▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▃▄▅▇▆|
-              V14.B|▇▇▅▃▂▁▁▁▁▁▁▁▁▁                                ▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q15.B|▆▇▅▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▄▅▇▆|
-              V15.B|▇▇▅▃▂▂▁▁▁▁▁▁▁▁▁   ▁                         ▁▁▁▁▁▁▁▁▁▁▁▂▃▅▇▇|
-              Q16.B|▇▇▅▄▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▄▅▇▇|
-              V16.B|▇▇▄▃▂▁▁▁▁ ▁▁▁▁                                 ▁▁ ▁▁▁▁▁▂▃▄▇▇|
-              Q17.B|▇▇▅▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▄▅▇▇|
-              V17.B|▇▆▄▃▂▁▁▁    ▁                                    ▁ ▁▁▁▁▂▃▄▆▇|
-              Q18.B|▇▇▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▆▇|
-              V18.B|▇▇▄▃▂▁▁▁▁                                       ▁▁▁ ▁▁▁▂▃▄▇▇|
-              Q19.B|▇▇▅▄▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▄▇▇|
-              V19.B|▇▆▄▂▂▁▁▁                                             ▁▁▂▂▄▆▇|
-              Q20.B|▇▇▅▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▃▅▇▇|
-              V20.B|▇▇▅▃▂▁▁▁▁▁▁▁▁▁                              ▁▁▁▁▁▁▁▁▁▁▁▂▃▅▇▇|
-              Q21.B|▇▇▅▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▇|
-              V21.B|▇▆▄▂▂▁▁▁                                            ▁▁▁▂▂▄▆▇|
-              Q22.B|▇▇▅▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▄▅▇▇|
-              V22.B|▇▆▄▂▁▁▁▁  ▁                                         ▁▁▁▁▂▃▆▇|
-              Q23.B|▇▇▅▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▇|
-              V23.B|▇▇▅▃▂▁▁▁▁▁▁▁▁▁                               ▁  ▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q24.B|▇▇▆▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▇|
-              V24.B|▇▆▄▂▁▁▁                                          ▁   ▁▁▁▂▄▆▇|
-              Q25.B|▇▇▅▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▇|
-              V25.B|▇▇▄▃▂▁▁▁ ▁▁▁▁                                   ▁ ▁▁▁▁▁▂▃▄▆▇|
-              Q26.B|▇▇▅▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              V26.B|▇▇▅▃▂▁▁▁▁▁▁▁▁▁ ▁                               ▁▁▁▁▁▁▁▁▂▃▄▇▇|
-              Q27.B|▇▇▅▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▅▇▇|
-              V27.B|▇▆▄▂▂▁▁▁                                            ▁▁▁▂▂▄▆▇|
-              Q28.B|▇▇▅▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▃▄▅▇▇|
-              V28.B|▇▇▅▃▂▂▁▁▁▁▁▁▁▁▁ ▁                         ▁▁ ▁▁▁▁▁▁▁▁▁▂▂▃▅▇▇|
-              Q29.B|▇▇▅▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▄▅▇▇|
-              V29.B|▇▆▄▂▁▁▁                                             ▁▁▁▁▂▄▆▇|
-              Q30.B|▇▇▅▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▅▇▇|
-              V30.B|▇▇▅▃▂▂▂▁▁▁▁▁▁▁▁▁▁ ▁▁  ▁▁ ▁ ▁▁▁      ▁▁ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▄▅▇▇|
-              Q31.B|▇▆▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▄▆▇|
-              V31.B|▇▇▄▃▂▁▁▁▁▁▁▁▁▁▁ ▁▁   ▁            ▁    ▁  ▁ ▁▁▁▁▁▁▁▁▁▁▂▂▃▄▇▇|
 ```
 
-While created originally to plot distributions of weights/gradients it can be also used to visualize time series and
-is not restricted to ML use cases, obviously. Can be used to show latency distribution, for example.
+As we can see, it's very compact, can be put to log files with any other relevant info and gives a good insight into what do weights look like: bimodal, close to 1e-4, earlier layers move closer to center. 
+
+While created originally to plot distributions of weights/gradients or ML models it is not restricted to ML use cases, obviously. Can be used to show latency distribution, for example.
 
 Installation:
 ```
