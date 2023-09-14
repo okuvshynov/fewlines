@@ -1,7 +1,5 @@
 import math
 
-# Blocks to use to plot charts.
-
 # not using the largest block so that two histograms on two lines won't collide
 bar_blocks     = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
 
@@ -14,14 +12,7 @@ colors = {
     'red'  : [-1, 196, 124, 52],
 }
 
-def histogram(data, bins, scale_range=None, ignore_outliers=False):
-    # If a range is specified, use it. Otherwise, use the min/max of the data.
-    min_val = scale_range[0] if scale_range else min(data)
-    max_val = scale_range[1] if scale_range else max(data)
-    
-    # Create the bins. We'll have one more bin edge than the number of bins.
-    bin_edges = [min_val + i * (max_val - min_val) / bins for i in range(bins + 1)]
-    
+def histogram(data, bins, min_val, max_val):    
     # Initialize the bin counts to zero.
     bin_counts = [0] * bins
 
@@ -29,17 +20,10 @@ def histogram(data, bins, scale_range=None, ignore_outliers=False):
     for x in data:
         if x is None or x is math.isnan(x):
             continue
-        if x < min_val or x > max_val:
-            if ignore_outliers:
-                continue
-            else:
-                bin_index = 0 if x < min_val else bins - 1
-        else:
-            bin_index = min(int((x - min_val) * bins / (max_val - min_val)), bins - 1)
-        bin_counts[bin_index] += 1
+        bin_index = int((x - min_val) * bins / (max_val - min_val))
+        bin_counts[max(0, min(bin_index, bins - 1))] += 1
     
-    return bin_counts, bin_edges
-
+    return bin_counts
 def top_axis_str(mn, mx, chart_width, left_margin):
     mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
     if left_margin <= 0:
@@ -69,14 +53,13 @@ def global_range(numbers):
     return mn, mx
 
 # bar_line plots a line using blocks without color coding. more suitable for log files
-def bar_line(y, chr=bar_blocks) -> str:
+def bar_line(y, cells=bar_blocks) -> str:
     Y = max(y)
     if Y == 0:
-        return chr[0] * len(y)
+        return cells[0] * len(y)
     clamp = lambda v, a, b: max(a, min(v, b))
-    cell = lambda v: chr[clamp(int(v * len(chr) / Y), 0, len(chr) - 1)]
-    horizon = ''.join([cell(v) for v in y])
-    return horizon
+    cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
+    return ''.join([cell(v) for v in y])
 
 # horizon_line plots line using blocks and color - suitable for terminal output
 def horizon_line(y, color='green', chrs=horizon_blocks) -> str:
@@ -84,15 +67,7 @@ def horizon_line(y, color='green', chrs=horizon_blocks) -> str:
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
     cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in chrs]
-    Y = max(y)
-    if Y == 0:
-        return chrs[0] * len(y)
-    clamp = lambda v, a, b: max(a, min(v, b))
-    cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
-    horizon = ''.join([cell(v) for v in y])
-    return horizon
-
-### Actual API
+    return bar_line(y, cells)
 
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
@@ -108,14 +83,13 @@ def bar_histograms(numbers, chart_width=60, axis=True, left_margin=20, color=Non
         res.append(top_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
 
     for title, values in numbers.items():
-        values, bin_edges = histogram(values, chart_width, (mn, mx))
+        values = histogram(values, chart_width, mn, mx)
         chart = bar_line(values) if color is None else horizon_line(values, color=color)
         if left_margin <= 0:
             left = ''
         else:
-            title = f'{title}|'
-            left = f'{title}'[-left_margin:]
-            left = f"{left:>{left_margin}}"
+            left = f'{title}|'[-left_margin:]
+            left = f'{left:>{left_margin}}'
         
         right = '|'
         res.append(left + chart + right)
