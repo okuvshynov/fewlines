@@ -24,11 +24,6 @@ def histogram(data, bins, min_val, max_val):
         bin_counts[max(0, min(bin_index, bins - 1))] += 1
     
     return bin_counts
-def top_axis_str(mn, mx, chart_width, left_margin):
-    mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
-    if left_margin <= 0:
-        return '_' * chart_width + f'|{mx_text}'
-    return '~' * (left_margin - len(mn_text)) + mn_text + '~' * chart_width + f'|{mx_text}'
 
 # for things like min/max for dict of lists
 def global_stat(numbers, fn):
@@ -52,7 +47,13 @@ def global_range(numbers):
     
     return mn, mx
 
-# bar_line plots a line using blocks without color coding. more suitable for log files
+def top_axis_str(mn, mx, chart_width, left_margin):
+    mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
+    if left_margin <= 0:
+        return '_' * chart_width + f'|{mx_text}'
+    return '~' * (left_margin - len(mn_text)) + mn_text + '~' * chart_width + f'|{mx_text}'
+
+# bar_line plots a line using provided blocks or default bar_blocks
 def bar_line(y, cells=bar_blocks) -> str:
     Y = max(y)
     if Y == 0:
@@ -62,11 +63,11 @@ def bar_line(y, cells=bar_blocks) -> str:
     return ''.join([cell(v) for v in y])
 
 # horizon_line plots line using blocks and color - suitable for terminal output
-def horizon_line(y, color='green', chrs=horizon_blocks) -> str:
+def horizon_line(y, color='green', cells=horizon_blocks) -> str:
     bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
-    cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in chrs]
+    cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
     return bar_line(y, cells)
 
 # Plot multiple histograms on the same scale.

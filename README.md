@@ -42,7 +42,7 @@ Installation:
 pip install fewlines
 ```
 
-## Usage examples
+## Usage example
 
 ```
 import numpy as np
