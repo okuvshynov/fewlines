@@ -44,8 +44,34 @@ python installation:
 pip install fewlines
 ```
 
-c++ installation
-copy header file
+c++ installation:
+
+copy header file, try out the demo:
+
+```
+$ c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o /tmp/bar_demo && /tmp/bar_demo
+
+bar_line: 
+▂▄▆▇
+
+bar_histogram: 
+▇                   ▇                   ▇                  ▇
+
+bar_histograms<vector<list>>: 
+~~~~~~~~~~~~~~~~~ 1|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|6
+~~~~~~~~~~~~~~~ one|▇           ▇           ▇                                   |
+~~~~~~~~~~~~~~~ two|                                    ▇           ▇          ▇|
+
+bar_histograms<map<vector>>: 
+~~~~~~~~~~~~~~~ 7.1|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|12.6
+~~~~~~~~~~~~~~ four|                                    ▇           ▇          ▇|
+~~~~~~~~~~~~~ three|▇          ▇            ▇                                   |
+
+bar_histograms<map<set>>: 
+~~~~~~~~~~~~~~ 13.7|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|18.2
+~~~~~~~~~~~~~~ five|▇             ▇              ▇                              |
+~~~~~~~~~~~~~~~ six|                              ▇              ▇             ▇|
+```
 
 ## Usage example
 
