@@ -3,12 +3,12 @@
 
 #include <algorithm>
 #include <array>
+#include <iomanip>
+#include <iostream>
+#include <ranges>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <ranges>
-#include <iomanip>
-#include <sstream>
-#include <iostream>
 
 namespace fewlines {
 
@@ -26,7 +26,6 @@ std::vector<uint64_t> _histogram(iter_t from, iter_t to, double mn, double mx, s
                 double bin = std::min(bins - 1.0, std::max(0.0, (v - mn) * bins / (mx - mn)));
                 res[std::min(bins - 1, static_cast<size_t>(bin))]++;
             }
-
         }
     });
     return res;
@@ -154,7 +153,6 @@ bar_histograms<map<set>>:
 
 */
 
-
 #ifdef __FEWLINES_DEMO_
 
 #include <map>
@@ -174,7 +172,7 @@ int main() {
     std::wcout << fewlines::bar_histogram(v.begin(), v.end()) << std::endl;
 
     std::vector<std::pair<std::wstring, std::list<int>>> vec1 {
-        {L"one", {1, 2, 3}},
+        {L"one", {1, 2, 3, 4, 5, 6, 4, 5, 6}},
         {L"two", {4, 5, 6}}
     };
 
