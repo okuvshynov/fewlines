@@ -155,35 +155,55 @@ bar_histograms<map<set>>:
 
 #ifdef __FEWLINES_DEMO_
 
-#include <map>
-#include <vector>
 #include <iostream>
 #include <list>
+#include <map>
+#include <random>
 #include <set>
+#include <vector>
+
+template<typename T>
+T as(const std::vector<double>& v) {
+    return T(v.begin(), v.end());
+}
 
 int main() {
-    std::vector<int> v{1,2,3,4};
+    std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     std::wcout.imbue(std::locale(""));
 
     std::cout << std::endl << "bar_line: " << std::endl;
     std::wcout << fewlines::bar_line(v.begin(), v.end()) << std::endl;
     
-    std::cout << std::endl << "bar_histogram: " << std::endl;
-    std::wcout << fewlines::bar_histogram(v.begin(), v.end()) << std::endl;
 
-    std::vector<std::pair<std::wstring, std::list<int>>> vec1 {
-        {L"one", {1, 2, 3, 4, 5, 6, 4, 5, 6}},
-        {L"two", {4, 5, 6}}
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+
+    std::normal_distribution norm_d;
+
+    auto gen_norm = [&](size_t cnt) {
+        std::vector<double> res(cnt);
+        std::generate(res.begin(), res.end(), [&norm_d, &gen]{ return norm_d(gen); });
+        return res;
+    };
+
+    auto v1 = gen_norm(10000);
+
+    std::cout << std::endl << "bar_histogram: " << std::endl;
+    std::wcout << fewlines::bar_histogram(v1.begin(), v1.end()) << std::endl;
+
+    std::vector<std::pair<std::wstring, std::list<double>>> vec1 {
+        {L"one", as<std::list<double>>(gen_norm(100))},
+        {L"two", as<std::list<double>>(gen_norm(200))}
     };
 
     std::map<std::wstring, std::vector<double>> map1 {
-        {L"three", {7.1, 8.2, 9.3}},
-        {L"four", {10.4, 11.5, 12.6}}
+        {L"three", gen_norm(300)},
+        {L"four", gen_norm(400)}
     };
 
     std::map<std::wstring, std::set<float>> map2 {
-        {L"five", {13.7f, 14.8f, 15.9f}},
-        {L"six", {16.0f, 17.1f, 18.2f}}
+        {L"five", as<std::set<float>>(gen_norm(500))},
+        {L"six", as<std::set<float>>(gen_norm(600))}
     };
 
     std::cout << std::endl << "bar_histograms<vector<list>>: " << std::endl;
