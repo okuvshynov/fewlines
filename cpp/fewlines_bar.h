@@ -87,6 +87,13 @@ std::wstring bar_histogram(iter_t from, iter_t to, size_t bins=60) {
         return std::wstring(bins, L' ');
     }
 
+    auto mn = *mn_it;
+    auto mx = *mx_it;
+    if (mn == mx) {
+        mn -= 1;
+        mx += 1;
+    }
+
     auto hist = _histogram(from, to, *mn_it, *mx_it, bins);
 
     return bar_line(hist.begin(), hist.end());
@@ -118,6 +125,11 @@ std::vector<std::wstring> bar_histograms(
         global_max = std::max(global_max, *mx_it);
     }
 
+    if (global_min == std::numeric_limits<num_t>::max() || global_max == std::numeric_limits<num_t>::min()) {
+        global_min = 0;
+        global_max = 1;
+    }
+
     if (header) {
         res.push_back(_header(global_min, global_max, bins, left_margin));
     }
@@ -132,31 +144,40 @@ std::vector<std::wstring> bar_histograms(
 
 }
 
-// Simple demo you can compile & run as is:
-// c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o /tmp/bar_demo && /tmp/bar_demo
-
 /*
+
+Simple demo you can compile & run as is:
+
+$ c++ -std=c++2a -x c++ ./fewlines_bar.h -I. -D__FEWLINES_DEMO_ -o /tmp/bar_demo && /tmp/bar_demo
 
 bar_line: 
  ▁▂▃▄▄▅▆▇▇
 
 bar_histogram: 
-                ▁▁▁▁▂▃▃▄▄▅▆▆▆▆▇▇▇▇▆▆▅▅▄▃▃▂▂▁▁▁              
+                ▁▁▁▂▃▃▄▄▅▆▆▇▇▇▇▇▇▇▆▅▄▄▃▂▂▁▁▁                
+
+empty bar_histogram: 
+                                                            
 
 bar_histograms<vector<list>>: 
-~~~~~~~~~~~~~ -2.59|~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|2.99
-~~~~~~~~~~~~~~~ one| ▁ ▁ ▁▁ ▂ ▁▃▁ ▃▃▂▃▃▂▂▂▄▁▆▅ ▆ ▇▇▁▄▄ ▇▃▂ ▃▂▁ ▂ ▁   ▂          |
-~~~~~~~~~~~~~~~ two|  ▁     ▁ ▁   ▃▁▂▂▃▄▂▁▂▃▃▄▅▃▇▃▂▂▄▃▅▂▃▁▂▁▁▃▁▂  ▂             |
+~~~~~~~~~~~~~ -3.54|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~|2.61
+~~~~~~~~~~~~~~~ one|                    ▁▁ ▁  ▁▂▁▂▆▁▁▁▂▄▄▅▇▃▂▄▁▁▅  ▄▁  ▁  ▂ ▁   |
+~~~~~~~~~~~~~~~ two|         ▁  ▁  ▁▁ ▄▂▄▂▂▄▂▅▅▁▆▅▇▄▃▇▅▅▄▂▃▇▄▅▄▂▅▁ ▂▁ ▁   ▂     |
 
 bar_histograms<map<vector>>: 
-~~~~~~~~~~~~~~ -3.6|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.02
-~~~~~~~~~~~~~~ four|              ▁▁   ▁▁▂▂▃▂▄▃▅▅▃▅▅▆▄▇▇▆▆▃▅▅▂▃▁▁▁▁ ▁           |
-~~~~~~~~~~~~~ three|               ▂  ▂▂▃▃▂▂▅▄▇▂▅▆▅▅▄▃▂▅▄▅▃▄▅▂▂▄▂ ▂▁▁           |
+~~~~~~~~~~~~~ -3.11|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.16
+~~~~~~~~~~~~~~ four|            ▁ ▂▂▂▂▂▄▅▅▄▅▄▅▆▅▇▄▇▅▆▅▃▂▄▆▃▄▅▁▁▂▁▁▁  ▁▁         |
+~~~~~~~~~~~~~ three|        ▁     ▁▁ ▁▁▂▄▄▂▂▄▃▄▃▃▂▃▆▇▄▃▃▂▂▁▃▁▁▁▂▁ ▁  ▁  ▁   ▁   |
 
 bar_histograms<map<set>>: 
-~~~~~~~~~~~~~ -3.26|~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.8
-~~~~~~~~~~~~~~ five|         ▁▁▁▁▁▁▄▁▄▂▄▃▇▇▄▅▇▄▆▄▇▄▆▄▆▅▄▁▄▂▁▂▁▁▁                |
-~~~~~~~~~~~~~~~ six|            ▁▁▁▂▃▂▃▄▃▄▅▃▄▆▇▆▇▅▄▄▄▄▄▃▅▂▁▂ ▁▁▁▁               |
+~~~~~~~~~~~~~ -3.38|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.43
+~~~~~~~~~~~~~~ five|          ▁   ▁▁▂▂▄▃▂▃▅▄▅▆▆▇▅▄▅▄▅▅▅▅▄▃▂▃▃▂▂▁▂▁              |
+~~~~~~~~~~~~~~~ six|            ▁▁ ▂▂▂▂▃▃▅▃▄▅▅▆▇▇▅▇▇▅▅▅▅▄▃▄▁▂▄▁▄▁▁▂             |
+
+empty bar_histograms<map<set>>: 
+~~~~~~~~~~~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|1
+~~~~~~~~~~~ empty A|                                                            |
+~~~~~~~~~~~ empty B|                                                            |
 
 */
 
@@ -198,6 +219,10 @@ int main() {
     std::cout << std::endl << "bar_histogram: " << std::endl;
     std::wcout << fewlines::bar_histogram(v1.begin(), v1.end()) << std::endl;
 
+    std::vector<float> empty_vector;
+    std::cout << std::endl << "empty bar_histogram: " << std::endl;
+    std::wcout << fewlines::bar_histogram(empty_vector.begin(), empty_vector.end()) << std::endl;
+
     std::vector<std::pair<std::wstring, std::list<double>>> vec1 {
         {L"one", as<std::list<double>>(gen_norm(100))},
         {L"two", as<std::list<double>>(gen_norm(200))}
@@ -211,6 +236,11 @@ int main() {
     std::map<std::wstring, std::set<float>> map2 {
         {L"five", as<std::set<float>>(gen_norm(500))},
         {L"six", as<std::set<float>>(gen_norm(600))}
+    };
+
+    std::map<std::wstring, std::set<float>> empty_map {
+        {L"empty A", {}},
+        {L"empty B", {}}
     };
 
     std::cout << std::endl << "bar_histograms<vector<list>>: " << std::endl;
@@ -228,6 +258,12 @@ int main() {
     std::cout << std::endl << "bar_histograms<map<set>>: " << std::endl;
     
     for (auto l: fewlines::bar_histograms(map2)) {
+        std::wcout << l << std::endl;
+    }
+
+    std::cout << std::endl << "empty bar_histograms<map<set>>: " << std::endl;
+    
+    for (auto l: fewlines::bar_histograms(empty_map)) {
         std::wcout << l << std::endl;
     }
 
