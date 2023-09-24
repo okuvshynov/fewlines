@@ -94,9 +94,6 @@ std::wstring bar_histogram(iter_t from, iter_t to, size_t bins=60) {
         return std::wstring(bins, L' ');
     }
 
-    auto mn = *mn_it;
-    auto mx = *mx_it;
-
     auto hist = _histogram(from, to, *mn_it, *mx_it, bins);
 
     return bar_line(hist.begin(), hist.end());
