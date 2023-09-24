@@ -1,0 +1,13 @@
+{
+  "name": "fewlines",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "fewlines.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Oleksandr Kuvshynov <okuvshynov@gmail.com>",
+  "license": "MIT"
+}

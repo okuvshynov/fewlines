@@ -4,7 +4,7 @@ Whether we like it or not, we debug things by putting print statements around.
 
 `fewlines` is a supplement for this, allowing to plot bar charts which only take few lines in a terminal output, but can be a very useful piece of information.
 
-Currently python and c++20 version.
+Currently python, js and c++20 version.
 
 Requires Unicode block characters.
 Horizon-style color output requires terminal with 256 ANSI colors.
@@ -102,4 +102,10 @@ for l in bar_histograms(data, chart_width=40):
 c++
 ```
 c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o ./bar_demo && ./bar_demo
+```
+
+## TODO
+
+```
+[ ] what's most useful way to handle nan, inf, denorm numbers
 ```
