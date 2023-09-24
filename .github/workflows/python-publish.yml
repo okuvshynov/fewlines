@@ -26,7 +26,7 @@ jobs:
       working-directory: ./py/
       run: python -m build
     - name: Publish distribution 📦 to PyPI
-      working-directory: ./py/
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
+        packages-dir: ./py/
         password: ${{ secrets.PYPI_API_TOKEN }}
