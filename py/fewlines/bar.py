@@ -13,6 +13,10 @@ colors = {
 }
 
 def _bin_index(min_val, max_val, bins, x):
+    if min_val == max_val:
+        if x == min_val:
+            return bins // 2
+        return 0 if x < min_val else bins - 1
     bin_index = int((x - min_val) * bins / (max_val - min_val))
     return max(0, min(bin_index, bins - 1))
 
@@ -43,11 +47,6 @@ def _global_range(numbers):
 
     if mn is None or mx is None:
         mn, mx = 0.0, 0.0
-
-    if mn == mx:
-        mx += 1
-        mn -= 1
-    
     return mn, mx
 
 def _header(mn, mx, bins, left_margin, show_zero=True):
@@ -124,4 +123,10 @@ if __name__ == '__main__':
 
     # bar chart without colors
     for l in bar_histograms(data, bins=40):
+        print(l)
+
+    for l in bar_histograms({'empty': []}):
+        print(l)
+    
+    for l in bar_histograms({'zero': [0]}):
         print(l)
