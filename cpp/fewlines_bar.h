@@ -15,16 +15,23 @@ namespace fewlines {
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
 
 // Assumes v is not NaN
-size_t _bin_index(double mn, double mx, size_t bins, double v) {
+template<typename num_t>
+size_t _bin_index(num_t mn, num_t mx, size_t bins, num_t v) {
     if (std::isinf(v)) {
         return std::signbit(v) ? 0 : bins - 1;
     }
-    double bin = std::min(bins - 1.0, std::max(0.0, (v - mn) * bins / (mx - mn)));
+    if (mn == mx) {
+        if (v == mx) {
+            return bins / 2;
+        }
+        return v < mx ? 0 : bins - 1;
+    }
+    double bin = std::min(bins - 1.0, std::max(0.0, double((v - mn) * bins / (mx - mn))));
     return std::min(bins - 1, static_cast<size_t>(bin));
 }
 
-template<typename iter_t>
-std::vector<uint64_t> _histogram(iter_t from, iter_t to, double mn, double mx, size_t bins) {
+template<typename iter_t, typename num_t>
+std::vector<uint64_t> _histogram(iter_t from, iter_t to, num_t mn, num_t mx, size_t bins) {
     std::vector<uint64_t> res(bins, 0ull);
     // TODO: check for mn < mx
     std::ranges::for_each(from, to, [&res, bins, mn, mx](auto v) {
@@ -89,9 +96,6 @@ std::wstring bar_histogram(iter_t from, iter_t to, size_t bins=60) {
 
     auto mn = *mn_it;
     auto mx = *mx_it;
-    if (mn == mx) {
-        mx += 1;
-    }
 
     auto hist = _histogram(from, to, *mn_it, *mx_it, bins);
 
@@ -111,7 +115,7 @@ std::vector<std::wstring> bar_histograms(
     std::vector<std::wstring> res;
     using num_t = typename series_t::value_type::second_type::value_type; 
     num_t global_min = std::numeric_limits<num_t>::max();
-    num_t global_max = std::numeric_limits<num_t>::min();
+    num_t global_max = std::numeric_limits<num_t>::lowest();
     for (const auto& item : series) {
         auto mx_it = std::max_element(item.second.begin(), item.second.end());
         auto mn_it = std::min_element(item.second.begin(), item.second.end());
@@ -122,11 +126,6 @@ std::vector<std::wstring> bar_histograms(
 
         global_min = std::min(global_min, *mn_it);
         global_max = std::max(global_max, *mx_it);
-    }
-
-    if (global_min == std::numeric_limits<num_t>::max() || global_max == std::numeric_limits<num_t>::min()) {
-        global_min = 0;
-        global_max = 1;
     }
 
     if (header) {
@@ -192,6 +191,46 @@ empty bar_histograms<map<set>>:
 template<typename T>
 T as(const std::vector<double>& v) {
     return T(v.begin(), v.end());
+}
+
+template<typename vec_t>
+void plot(const vec_t& v) {
+    std::wcout << fewlines::bar_histogram(v.begin(), v.end()) << std::endl;
+    std::map<std::wstring, vec_t> m = { {L"vec", v} };
+    for (auto l: fewlines::bar_histograms(m)) {
+        std::wcout << l << std::endl;
+    }
+}
+
+template <typename integral_t>
+void limits(const std::string& type_name) {
+    std::cout << type_name << " empty:" << std::endl;
+    plot(std::vector<integral_t>{});
+    std::cout << type_name << " zero:" << std::endl;
+    plot(std::vector<integral_t>{0});
+    std::cout << type_name << " lowest:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest()});
+    std::cout << type_name << " max:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::max()});
+    std::cout << type_name << " lowest/max:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest(),
+                                 std::numeric_limits<integral_t>::max()});
+}
+
+#define RUN_LIMIT(int_type) limits<int_type>(#int_type)
+
+void edge_cases() {
+    RUN_LIMIT(int8_t);
+    RUN_LIMIT(uint8_t);
+    RUN_LIMIT(int16_t);
+    RUN_LIMIT(uint16_t);
+    RUN_LIMIT(int32_t);
+    RUN_LIMIT(uint32_t);
+    RUN_LIMIT(int64_t);
+    RUN_LIMIT(uint64_t);
+    RUN_LIMIT(float);
+    RUN_LIMIT(double);
+    RUN_LIMIT(long double);
 }
 
 int main() {
@@ -265,6 +304,8 @@ int main() {
     for (auto l: fewlines::bar_histograms(empty_map)) {
         std::wcout << l << std::endl;
     }
+
+    edge_cases();
 
     return 0;
 }
