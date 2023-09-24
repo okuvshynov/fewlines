@@ -23,8 +23,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Build package
+      working-directory: ./py/
       run: python -m build
     - name: Publish distribution 📦 to PyPI
+      working-directory: ./py/
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
