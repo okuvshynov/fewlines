@@ -90,7 +90,6 @@ std::wstring bar_histogram(iter_t from, iter_t to, size_t bins=60) {
     auto mn = *mn_it;
     auto mx = *mx_it;
     if (mn == mx) {
-        mn -= 1;
         mx += 1;
     }
 
