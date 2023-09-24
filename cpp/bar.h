@@ -14,18 +14,22 @@ namespace fewlines {
 
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
 
+// Assumes v is not NaN
+size_t _bin_index(double mn, double mx, size_t bins, double v) {
+    if (std::isinf(v)) {
+        return std::signbit(v) ? 0 : bins - 1;
+    }
+    double bin = std::min(bins - 1.0, std::max(0.0, (v - mn) * bins / (mx - mn)));
+    return std::min(bins - 1, static_cast<size_t>(bin));
+}
+
 template<typename iter_t>
 std::vector<uint64_t> _histogram(iter_t from, iter_t to, double mn, double mx, size_t bins) {
     std::vector<uint64_t> res(bins, 0ull);
     // TODO: check for mn < mx
     std::ranges::for_each(from, to, [&res, bins, mn, mx](auto v) {
         if (!std::isnan(v)) {
-            if (std::isinf(v)) {
-                res[std::signbit(v) ? 0 : bins - 1]++;
-            } else {
-                double bin = std::min(bins - 1.0, std::max(0.0, (v - mn) * bins / (mx - mn)));
-                res[std::min(bins - 1, static_cast<size_t>(bin))]++;
-            }
+            res[_bin_index(mn, mx, bins, v)]++;
         }
     });
     return res;
@@ -39,15 +43,18 @@ std::wstring _trim_or_pad(const std::wstring& str, size_t len) {
     }
 }
 
-std::wstring _header(double mn, double mx, size_t bins, size_t left_margin) {
+std::wstring _header(double mn, double mx, size_t bins, size_t left_margin, bool show_zero=true) {
     auto fmt = [](double v){
         std::wstringstream res;
         res << std::setprecision(3) << std::defaultfloat << v;
         return res.str();
     };
     auto mn_text = _trim_or_pad(L" " + fmt(mn) + L"|", left_margin);
-
-    return mn_text + std::wstring(bins, L'~') + L"|" + fmt(mx);
+    auto line = std::wstring(bins, L'~');
+    if (show_zero && mn <= 0.0 && mx >= 0.0) {
+        line[_bin_index(mn, mx, bins, 0.0)] = L'0';
+    }
+    return mn_text + line + L"|" + fmt(mx);
 }
 
 // plots a bar line with each element within provided iterator range 
@@ -126,7 +133,7 @@ std::vector<std::wstring> bar_histograms(
 }
 
 // Simple demo you can compile & run as is:
-// c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o ./bar_demo
+// c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o /tmp/bar_demo && /tmp/bar_demo
 
 /*
 

@@ -12,7 +12,11 @@ colors = {
     'red'  : [-1, 196, 124, 52],
 }
 
-def histogram(data, bins, min_val, max_val):    
+def _bin_index(min_val, max_val, bins, x):
+    bin_index = int((x - min_val) * bins / (max_val - min_val))
+    return max(0, min(bin_index, bins - 1))
+
+def _histogram(data, bins, min_val, max_val):    
     # Initialize the bin counts to zero.
     bin_counts = [0] * bins
 
@@ -20,13 +24,12 @@ def histogram(data, bins, min_val, max_val):
     for x in data:
         if x is None or x is math.isnan(x):
             continue
-        bin_index = int((x - min_val) * bins / (max_val - min_val))
-        bin_counts[max(0, min(bin_index, bins - 1))] += 1
+        bin_counts[_bin_index(min_val, max_val, bins, x)] += 1
     
     return bin_counts
 
 # for things like min/max for dict of lists
-def global_stat(numbers, fn):
+def _global_stat(numbers, fn):
     res = None
     if numbers:  # check if dictionary is not empty
         non_empty_values = [fn(v) for v in numbers.values() if v]
@@ -34,9 +37,9 @@ def global_stat(numbers, fn):
             res = fn(non_empty_values) 
     return res
 
-def global_range(numbers):
-    mn = global_stat(numbers, min)
-    mx = global_stat(numbers, max)
+def _global_range(numbers):
+    mn = _global_stat(numbers, min)
+    mx = _global_stat(numbers, max)
 
     if mn is None or mx is None:
         mn, mx = 0.0, 0.0
@@ -47,11 +50,13 @@ def global_range(numbers):
     
     return mn, mx
 
-def top_axis_str(mn, mx, chart_width, left_margin):
+def _header(mn, mx, bins, left_margin, show_zero=True):
     mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
     if left_margin <= 0:
-        return '_' * chart_width + f'|{mx_text}'
-    return '~' * (left_margin - len(mn_text)) + mn_text + '~' * chart_width + f'|{mx_text}'
+        return '_' * bins + f'|{mx_text}'
+    zero_at = _bin_index(mn, mx, bins, 0.0) if mn <= 0 and mx >= 0 else None
+    line = ''.join(['0' if b == zero_at else '~' for b in range(bins)])
+    return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
 # bar_line plots a line using provided blocks or default bar_blocks
 def bar_line(y, cells=bar_blocks) -> str:
@@ -72,19 +77,19 @@ def horizon_line(y, color='green', cells=horizon_blocks) -> str:
 
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
-#   chart_width - how many characters to use. Histogram will use that many bins.
+#   bins - how many characters to use. Histogram will use that many bins.
 #   axis        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histograms(numbers, chart_width=60, axis=True, left_margin=20, color=None):
-    mn, mx = global_range(numbers)
+def bar_histograms(numbers, bins=60, axis=True, left_margin=20, color=None):
+    mn, mx = _global_range(numbers)
     res = []
 
     if axis:
-        res.append(top_axis_str(mn, mx, chart_width=chart_width, left_margin=left_margin))
+        res.append(_header(mn, mx, bins=bins, left_margin=left_margin))
 
     for title, values in numbers.items():
-        values = histogram(values, chart_width, mn, mx)
+        values = _histogram(values, bins, mn, mx)
         chart = bar_line(values) if color is None else horizon_line(values, color=color)
         if left_margin <= 0:
             left = ''
@@ -100,12 +105,12 @@ def bar_histograms(numbers, chart_width=60, axis=True, left_margin=20, color=Non
 # Plot single histogram
 #   values      - a list of numbers to plot distribution on
 #   title       - name of the data
-#   chart_width - how many characters to use. Histogram will use that many bins.
+#   bins - how many characters to use. Histogram will use that many bins.
 #   axis        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histogram(values, title='', chart_width=60, axis=True, left_margin=20, color=None):
-    return bar_histograms({title: values}, chart_width, axis, left_margin, color)
+def bar_histogram(values, title='', bins=60, axis=True, left_margin=20, color=None):
+    return bar_histograms({title: values}, bins, axis, left_margin, color)
 
 # Some test example, requires numpy
 if __name__ == '__main__':
@@ -114,9 +119,9 @@ if __name__ == '__main__':
     
     # horizon with colors
     for color in colors:
-        for l in bar_histograms(data, chart_width=40, color=color):
+        for l in bar_histograms(data, bins=40, color=color):
             print(l)
 
     # bar chart without colors
-    for l in bar_histograms(data, chart_width=40):
+    for l in bar_histograms(data, bins=40):
         print(l)
