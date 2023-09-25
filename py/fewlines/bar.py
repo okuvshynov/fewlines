@@ -135,10 +135,7 @@ if __name__ == '__main__':
     for l in bar_histograms({'zero': [0]}):
         print(l)
 
-## while probably not idiomatic, I like unit tests right where the code is. 
-###
-####
-#####
+# while probably not idiomatic, I like unit tests right where the code is. 
 
     import unittest
 

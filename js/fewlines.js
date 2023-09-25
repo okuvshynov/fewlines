@@ -1,7 +1,7 @@
 function _bin_index(min_val, max_val, bins, x) {
   if (min_val === max_val) {
     if (x === min_val) {
-      return bins / 2
+      return Math.floor(bins / 2)
     }
     return x < min_val ? 0 : bins - 1
   }
@@ -37,7 +37,7 @@ function _foreach(mapLike, callback) {
 
 function _trim_or_pad(str, len) {
   if (str.length > len) {
-      return str.substr(str.length() - len);
+      return str.substr(str.length - len);
   } else {
       return '~'.repeat(len - str.length) + str;
   }
@@ -56,7 +56,8 @@ function _header(mn, mx, bins, left_margin, show_zero=true) {
   const mn_text = _trim_or_pad(" " + fmt(mn) + "|", left_margin);
   let line = '~'.repeat(bins);
   if (show_zero && mn <= 0.0 && mx >= 0.0) {
-    line[_bin_index(mn, mx, bins, 0.0)] = '0';
+    const index = _bin_index(mn, mx, bins, 0.0);
+    line = line.substring(0, index) + '0' + line.substring(index + 1);
   }
   return mn_text + line + "|" + fmt(mx)
 }
@@ -103,8 +104,28 @@ export function bar_histogram(values, title='', bins = 60, left_margin = 20, hea
 
 // experiments
 
-console.log(bar_line([1, 2, 3, 4, 4, 3, 2, 3, 3, 3, 3, 3, 33]));
+//console.log(bar_line([1, 2, 3, 4, 4, 3, 2, 3, 3, 3, 3, 3, 33]));
+//bar_histograms({ 'a': [1, 23, 3, 3, 3], 'b': [2, 3, 4] }).forEach(l => console.log(l));
+//bar_histogram([1, 2, 3, 4, 4, 3, 2, 3, 3, 3, 3, 3, 33]).forEach(l => console.log(l));
 
-bar_histograms({ 'a': [1, 23, 3, 3, 3], 'b': [2, 3, 4] }).forEach(l => console.log(l));
+console.assert(_bin_index(0, 0, 1, 0) === 0);
+console.assert(_bin_index(0, 0, 1, 10) === 0);
+console.assert(_bin_index(0, 0, 1, -10) === 0);
 
-bar_histogram([1, 2, 3, 4, 4, 3, 2, 3, 3, 3, 3, 3, 33]).forEach(l => console.log(l));
+[...Array(10).keys()].forEach(x => {
+  console.assert(_bin_index(0, 10, 10, x) === x);
+});
+
+console.assert(_bin_index(0, 10, 10, 10) === 9);
+
+// TODO: should this be 8 or 9? py version is 8.
+console.assert(_bin_index(0, 10, 10, 8.9) === 9);
+
+console.assert(_header(-10, 10, 20, 0) === "~~~~~~~~~~0~~~~~~~~~|10.0")
+console.assert(_header(-10, 10, 20, 10) === "~~~ -10.0|~~~~~~~~~~0~~~~~~~~~|10.0")
+console.assert(_header(-10, 10, 20, 0, false) === "~~~~~~~~~~~~~~~~~~~~|10.0")
+console.assert(_header(-10, 10, 20, 10, false) === "~~~ -10.0|~~~~~~~~~~~~~~~~~~~~|10.0")
+console.assert(_header(0, 10, 20, 0) === "0~~~~~~~~~~~~~~~~~~~|10.0")
+
+// TODO: formatting is bad
+console.assert(_header(0, 10, 20, 10) === "~~~~ 0.00|0~~~~~~~~~~~~~~~~~~~|10.0")
