@@ -149,7 +149,6 @@ if __name__ == '__main__':
                 self.assertEqual(_bin_index(0, 10, 10, x), x)
             self.assertEqual(_bin_index(0, 10, 10, 10), 9)
 
-            # TODO: is this actually right?
             self.assertEqual(_bin_index(0, 10, 10, 8.9), 8)
 
         def test_global_range(self):

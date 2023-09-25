@@ -42,11 +42,11 @@ std::vector<uint64_t> _histogram(iter_t from, iter_t to, num_t mn, num_t mx, siz
     return res;
 }
 
-std::wstring _trim_or_pad(const std::wstring& str, size_t len) {
+std::wstring _trim_or_pad(const std::wstring& str, size_t len, wchar_t chr) {
     if (str.length() > len) {
         return str.substr(str.length() - len);
     } else {
-        return std::wstring(len - str.length(), L'~') + str;
+        return std::wstring(len - str.length(), chr) + str;
     }
 }
 
@@ -56,7 +56,7 @@ std::wstring _header(double mn, double mx, size_t bins, size_t left_margin, bool
         res << std::setprecision(3) << std::defaultfloat << v;
         return res.str();
     };
-    auto mn_text = _trim_or_pad(L" " + fmt(mn) + L"|", left_margin);
+    auto mn_text = _trim_or_pad(L" " + fmt(mn) + L"|", left_margin, L'~');
     auto line = std::wstring(bins, L'~');
     if (show_zero && mn <= 0.0 && mx >= 0.0) {
         line[_bin_index(mn, mx, bins, 0.0)] = L'0';
@@ -131,7 +131,7 @@ std::vector<std::wstring> bar_histograms(
 
     for (const auto& item : series) {
         auto hist = _histogram(item.second.begin(), item.second.end(), global_min, global_max, bins);
-        std::wstring left = _trim_or_pad(L" " + item.first + L"|", left_margin);
+        std::wstring left = _trim_or_pad(L" " + item.first + L"|", left_margin, L' ');
         res.push_back(left + bar_line(hist.begin(), hist.end()) + L"|");
     }
     return res;
@@ -190,53 +190,12 @@ T as(const std::vector<double>& v) {
     return T(v.begin(), v.end());
 }
 
-template<typename vec_t>
-void plot(const vec_t& v) {
-    std::wcout << fewlines::bar_histogram(v.begin(), v.end()) << std::endl;
-    std::map<std::wstring, vec_t> m = { {L"vec", v} };
-    for (auto l: fewlines::bar_histograms(m)) {
-        std::wcout << l << std::endl;
-    }
-}
-
-template <typename integral_t>
-void limits(const std::string& type_name) {
-    std::cout << type_name << " empty:" << std::endl;
-    plot(std::vector<integral_t>{});
-    std::cout << type_name << " zero:" << std::endl;
-    plot(std::vector<integral_t>{0});
-    std::cout << type_name << " lowest:" << std::endl;
-    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest()});
-    std::cout << type_name << " max:" << std::endl;
-    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::max()});
-    std::cout << type_name << " lowest/max:" << std::endl;
-    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest(),
-                                 std::numeric_limits<integral_t>::max()});
-}
-
-#define RUN_LIMIT(int_type) limits<int_type>(#int_type)
-
-void edge_cases() {
-    RUN_LIMIT(int8_t);
-    RUN_LIMIT(uint8_t);
-    RUN_LIMIT(int16_t);
-    RUN_LIMIT(uint16_t);
-    RUN_LIMIT(int32_t);
-    RUN_LIMIT(uint32_t);
-    RUN_LIMIT(int64_t);
-    RUN_LIMIT(uint64_t);
-    RUN_LIMIT(float);
-    RUN_LIMIT(double);
-    RUN_LIMIT(long double);
-}
-
 int main() {
     std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     std::wcout.imbue(std::locale(""));
 
     std::cout << std::endl << "bar_line: " << std::endl;
     std::wcout << fewlines::bar_line(v.begin(), v.end()) << std::endl;
-    
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
@@ -302,10 +261,98 @@ int main() {
         std::wcout << l << std::endl;
     }
 
-    edge_cases();
+    //edge_cases();
 
     return 0;
 }
 
 #endif
+
+
+#ifdef __FEWLINES_TESTS_
+
+#include <cassert>
+#include <iostream>
+#include <list>
+#include <map>
+#include <random>
+#include <set>
+#include <vector>
+
+using namespace fewlines;
+
+template<typename vec_t>
+void plot(const vec_t& v) {
+    std::wcout << fewlines::bar_histogram(v.begin(), v.end()) << std::endl;
+    std::map<std::wstring, vec_t> m = { {L"vec", v} };
+    for (auto l: fewlines::bar_histograms(m, 20)) {
+        std::wcout << l << std::endl;
+    }
+}
+
+template <typename integral_t>
+void limits(const std::string& type_name) {
+    std::cout << type_name << " empty:" << std::endl;
+    plot(std::vector<integral_t>{});
+    std::cout << type_name << " zero:" << std::endl;
+    plot(std::vector<integral_t>{0});
+    std::cout << type_name << " lowest:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest()});
+    std::cout << type_name << " max:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::max()});
+    std::cout << type_name << " lowest/max:" << std::endl;
+    plot(std::vector<integral_t>{std::numeric_limits<integral_t>::lowest(),
+                                 std::numeric_limits<integral_t>::max()});
+}
+
+#define RUN_LIMIT(int_type) limits<int_type>(#int_type)
+
+void edge_cases() {
+    RUN_LIMIT(int8_t);
+    RUN_LIMIT(uint8_t);
+    RUN_LIMIT(int16_t);
+    RUN_LIMIT(uint16_t);
+    RUN_LIMIT(int32_t);
+    RUN_LIMIT(uint32_t);
+    RUN_LIMIT(int64_t);
+    RUN_LIMIT(uint64_t);
+    RUN_LIMIT(float);
+    RUN_LIMIT(double);
+    RUN_LIMIT(long double);
+}
+
+void test_bin_index() {
+  assert(_bin_index(0, 0, 1, 0) == 0);
+  assert(_bin_index(0, 0, 1, 10) == 0);
+  assert(_bin_index(0, 0, 1, -10) == 0);
+  
+  for (int x = 0; x < 10; x++) {
+    assert(_bin_index(0, 10, 10, x) == x);
+  }
+  
+  assert(_bin_index(0, 10, 10, 10) == 9);  
+
+  assert(_bin_index(0.0, 10.0, 10, 8.9) == 8);
+}
+
+void test_bar_line() {
+  std::vector<int> v1{1,2,3};
+  assert(bar_line(v1.begin(), v1.end()) == L"▂▅▇");
+  std::vector<int> v2{};
+  assert(bar_line(v2.begin(), v2.end()) == L"");
+  std::vector<int> v3{0, 100};
+  assert(bar_line(v3.begin(), v3.end()) == L" ▇");
+}
+
+int main() {
+    std::wcout.imbue(std::locale(""));
+    test_bin_index();
+    test_bar_line();
+    edge_cases();
+    return 0;
+}
+
+#endif
+
+
 #endif
