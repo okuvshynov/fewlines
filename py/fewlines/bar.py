@@ -130,3 +130,36 @@ if __name__ == '__main__':
     
     for l in bar_histograms({'zero': [0]}):
         print(l)
+
+## while probably not idiomatic, I like unit tests right where the code is. 
+###
+####
+#####
+
+    import unittest
+
+    class TestUtils(unittest.TestCase):
+        def test_bin_index(self):
+            self.assertEqual(_bin_index(0, 0, 1, 0), 0)
+            self.assertEqual(_bin_index(0, 0, 1, 10), 0)
+            self.assertEqual(_bin_index(0, 0, 1, -10), 0)
+
+            for x in range(10):
+                self.assertEqual(_bin_index(0, 10, 10, x), x)
+            self.assertEqual(_bin_index(0, 10, 10, 10), 9)
+
+            # TODO: is this actually right?
+            self.assertEqual(_bin_index(0, 10, 10, 8.9), 8)
+
+        def test_global_range(self):
+            self.assertEqual(_global_range({}), (0.0, 0.0))
+            self.assertEqual(_global_range({'a': []}), (0.0, 0.0))
+            self.assertEqual(_global_range({'a': [1]}), (1.0, 1.0))
+            self.assertEqual(_global_range({'a': [1], 'b': []}), (1.0, 1.0))
+            self.assertEqual(_global_range({'a': [1], 'b': [2]}), (1.0, 2.0))
+
+
+
+
+
+    unittest.main()
