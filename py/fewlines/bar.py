@@ -51,14 +51,18 @@ def _global_range(numbers):
 
 def _header(mn, mx, bins, left_margin, show_zero=True):
     mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
-    if left_margin <= 0:
-        return '_' * bins + f'|{mx_text}'
-    zero_at = _bin_index(mn, mx, bins, 0.0) if mn <= 0 and mx >= 0 else None
+    
+    zero_at = _bin_index(mn, mx, bins, 0.0) if mn <= 0 and mx >= 0 and show_zero else None
     line = ''.join(['0' if b == zero_at else '~' for b in range(bins)])
+    
+    if left_margin <= 0:
+        return line + f'|{mx_text}'
     return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
 # bar_line plots a line using provided blocks or default bar_blocks
 def bar_line(y, cells=bar_blocks) -> str:
+    if not y:
+        return ""
     Y = max(y)
     if Y == 0:
         return cells[0] * len(y)
@@ -77,14 +81,14 @@ def horizon_line(y, color='green', cells=horizon_blocks) -> str:
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
 #   bins - how many characters to use. Histogram will use that many bins.
-#   axis        - show a line with range at the top
+#   header        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histograms(numbers, bins=60, axis=True, left_margin=20, color=None):
+def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None):
     mn, mx = _global_range(numbers)
     res = []
 
-    if axis:
+    if header:
         res.append(_header(mn, mx, bins=bins, left_margin=left_margin))
 
     for title, values in numbers.items():
@@ -105,11 +109,11 @@ def bar_histograms(numbers, bins=60, axis=True, left_margin=20, color=None):
 #   values      - a list of numbers to plot distribution on
 #   title       - name of the data
 #   bins - how many characters to use. Histogram will use that many bins.
-#   axis        - show a line with range at the top
+#   header        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histogram(values, title='', bins=60, axis=True, left_margin=20, color=None):
-    return bar_histograms({title: values}, bins, axis, left_margin, color)
+def bar_histogram(values, title='', bins=60, header=True, left_margin=20, color=None):
+    return bar_histograms({title: values}, bins, header, left_margin, color)
 
 # Some test example, requires numpy
 if __name__ == '__main__':
@@ -158,8 +162,31 @@ if __name__ == '__main__':
             self.assertEqual(_global_range({'a': [1], 'b': []}), (1.0, 1.0))
             self.assertEqual(_global_range({'a': [1], 'b': [2]}), (1.0, 2.0))
 
+        def test_header(self):
+            self.assertEqual(_header(-10, 10, 20, 0), "~~~~~~~~~~0~~~~~~~~~|10")
+            self.assertEqual(_header(-10, 10, 20, 10), "~~~~~ -10|~~~~~~~~~~0~~~~~~~~~|10")
+            self.assertEqual(_header(-10, 10, 20, 0, show_zero=False), "~~~~~~~~~~~~~~~~~~~~|10")
+            self.assertEqual(_header(-10, 10, 20, 10, show_zero=False), "~~~~~ -10|~~~~~~~~~~~~~~~~~~~~|10")
+            self.assertEqual(_header(0, 10, 20, 0), "0~~~~~~~~~~~~~~~~~~~|10")
+            self.assertEqual(_header(0, 10, 20, 10), "~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~|10")
 
+        def test_bar_line(self):
+            self.assertEqual(bar_line([1,2,3]), "▂▅▇")
+            self.assertEqual(bar_line([]), "")
+            self.assertEqual(bar_line([0, 100]), " ▇")
 
+        def test_histogram(self):
+            self.assertEqual(_histogram([], 5, None, None), [0, 0, 0, 0, 0])
+            self.assertEqual(_histogram([0], 5, 0, 0), [0, 0, 1, 0, 0])
+            self.assertEqual(_histogram([0, 1], 5, 0, 1), [1, 0, 0, 0, 1])
+            self.assertEqual(_histogram([0], 5, 0, 1), [1, 0, 0, 0, 0])
+            self.assertEqual(_histogram([0, 1, 2], 1, 0, 2), [3])
+
+        def test_bar_histograms(self):
+            self.assertEqual(bar_histograms({'A': [0], 'B': [1]}, 10, header=False, left_margin=0), ["▇         |", "         ▇|"])
+            self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, header=False, left_margin=0), ["▇        ▇|", "         ▇|"])
+            self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, left_margin=0), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
+            self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, left_margin=5), ["~~ 0|0~~~~~~~~~|1", "   A|▇        ▇|", "   B|         ▇|"])
 
 
     unittest.main()
