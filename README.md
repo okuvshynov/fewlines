@@ -107,5 +107,7 @@ c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o ./bar_demo && ./bar_demo
 ## TODO
 
 ```
+[ ] fix overflows in c++ implementations
 [ ] what's most useful way to handle nan, inf, denorm numbers
+[ ] joint test cases to check consistency among implementations
 ```

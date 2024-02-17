@@ -26,6 +26,7 @@ size_t _bin_index(num_t mn, num_t mx, size_t bins, num_t v) {
         }
         return v < mx ? 0 : bins - 1;
     }
+    // TODO: multiple overflows here
     double bin = std::min(bins - 1.0, std::max(0.0, double((v - mn) * bins / (mx - mn))));
     return std::min(bins - 1, static_cast<size_t>(bin));
 }
