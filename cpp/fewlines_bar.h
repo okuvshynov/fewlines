@@ -9,10 +9,73 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace fewlines {
 
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
+
+
+template<typename num_t>
+std::optional<size_t> _bin_index_fp(num_t mn, num_t mx, size_t bins, num_t v) {
+    static_assert(std::is_floating_point_v<num_t> == true);
+
+    // sanity checks:
+    if (bins == 0 || mn > mx || !std::isfinite(mn) || !std::isfinite(mx)) {
+        return std::nullopt;
+    }
+
+    // corner cases
+    if (v < mn) {
+        return 0;
+    }
+
+    if (v > mx) {
+        return bins - 1;
+    }
+
+    if (mn == mx) {
+        return bins / 2;
+    }
+
+    if (bins == 1) {
+        return 0;
+    }
+
+    // check for overflow of interval length
+    if (mn + std::numeric_limits<num_t>::max() < mx) {
+        // handle overflow: just divide everything by 2.
+        mn = mn / num_t(2);
+        mx = mx / num_t(2);
+        // can we introduce underflow here this way? we might.
+        v = v / num_t(2);
+    }
+
+    // open or closed intervals?
+    auto percentile = std::max(num_t(0), (v - mn) / (mx - mn));
+    size_t bin_index = bins * percentile;
+    bin_index = std::min(bins - 1, bin_index);
+
+    // this might be wrong in the underflow situation, when the interval is very large and 
+    // the value is close to the boundary between buckets.
+    // for example, consider mn = -1e100, mx = 1e100, bins = 2, v = -1000.
+    // correct answer is 0, but we'll return 1.
+
+    // let's try to fix that:
+    auto bin_size = (mx - mn) / bins;
+    auto expected_a = mn + bin_size * bin_index;
+    auto expected_b = mn + bin_size * bin_index + bin_size;
+
+    if (expected_a > v) {
+        bin_index--;
+    }
+    if (expected_b < v) {
+        bin_index++;
+    }
+
+    return std::min(bins - 1, bin_index);
+}
+
 
 // Assumes v is not NaN
 template<typename num_t>
@@ -26,7 +89,7 @@ size_t _bin_index(num_t mn, num_t mx, size_t bins, num_t v) {
         }
         return v < mx ? 0 : bins - 1;
     }
-    // TODO: multiple overflows here
+
     double bin = std::min(bins - 1.0, std::max(0.0, double((v - mn) * bins / (mx - mn))));
     return std::min(bins - 1, static_cast<size_t>(bin));
 }
@@ -336,6 +399,33 @@ void test_bin_index() {
   assert(_bin_index(0.0, 10.0, 10, 8.9) == 8);
 }
 
+void test_bin_index_fp() {
+    // corner cases
+    assert(_bin_index_fp(0.0, 1.0, 0, 0.5).has_value() == false);
+    assert(_bin_index_fp(-std::numeric_limits<double>::infinity(), 1.0, 1, 0.5).has_value() == false);
+    assert(_bin_index_fp(0.0, std::numeric_limits<double>::infinity(), 1, 0.5).has_value() == false);
+    assert(_bin_index_fp(0.0, -0.1, 1, 0.5).has_value() == false);
+
+    // values outside the interval
+    assert(_bin_index_fp(0.0, 1.0, 2, 5.0) == 1);
+    assert(_bin_index_fp(0.0, 1.0, 2, -5.0) == 0);
+    assert(_bin_index_fp(0.0, 1.0, 2, std::numeric_limits<double>::infinity()) == 1);
+    assert(_bin_index_fp(0.0, 1.0, 2, -std::numeric_limits<double>::infinity()) == 0);
+
+    // 'normal' data
+    assert(_bin_index_fp(0.0, 100.0, 10, 10.0) == 1);
+    assert(_bin_index_fp(0.0, 100.0, 10, 9.999) == 0);
+    assert(_bin_index_fp(0.0, 100.0, 10, 19.999) == 1);
+    assert(_bin_index_fp(0.0, 100.0, 10, 100.0) == 9);
+    
+    // huge intervals, testing underflow
+    assert(_bin_index_fp(-1.0e100, 1.0e100, 2, -10000.0) == 0);
+
+    // overflow double
+    assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 4, 100000.0) == 2);
+    
+}
+
 void test_bar_line() {
   std::vector<int> v1{1,2,3};
   assert(bar_line(v1.begin(), v1.end()) == L"▂▅▇");
@@ -347,6 +437,7 @@ void test_bar_line() {
 
 int main() {
     std::wcout.imbue(std::locale(""));
+    test_bin_index_fp();
     test_bin_index();
     test_bar_line();
     edge_cases();
