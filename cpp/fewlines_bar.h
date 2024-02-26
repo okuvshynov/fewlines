@@ -15,6 +15,20 @@ namespace fewlines {
 
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
 
+
+// computes a + bin_size * bin_index and handles the case when bin_size * bin_index will overflow
+template<typename num_t> 
+num_t multiply_add_no_overflow(num_t a, num_t bin_size, size_t bin_index) {
+    static_assert(std::is_floating_point_v<num_t> == true);
+
+    size_t max_index = std::numeric_limits<num_t>::max() / bin_size;
+    if (bin_index > max_index) {
+        a += max_index * bin_size;
+        bin_index -= max_index;
+    }
+    return a + bin_size * bin_index;
+}
+
 template<typename num_t>
 std::optional<size_t> _bin_index_fp(num_t mn, num_t mx, size_t bins, num_t v) {
     static_assert(std::is_floating_point_v<num_t> == true);
@@ -401,6 +415,11 @@ void test_bin_index() {
   assert(_bin_index(0.0, 10.0, 10, 8.9) == 8);
 }
 
+void test_multiply_add_no_overflow() {
+    assert(multiply_add_no_overflow(0.0, 10.0, 10) == 100.0);
+    assert(multiply_add_no_overflow(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2) == std::numeric_limits<double>::max());
+}
+
 void test_bin_index_fp() {
     // corner cases
     assert(_bin_index_fp(0.0, 1.0, 0, 0.5).has_value() == false);
@@ -430,8 +449,6 @@ void test_bin_index_fp() {
     assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2, std::numeric_limits<double>::denorm_min()) == 1);
     // TODO: fix this case as well
     //assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2, - std::numeric_limits<double>::denorm_min()) == 0);
-    
-    
 }
 
 void test_bar_line() {
@@ -446,6 +463,7 @@ void test_bar_line() {
 int main() {
     std::wcout.imbue(std::locale(""));
     test_bin_index_fp();
+    test_multiply_add_no_overflow();
     //test_bin_index();
     //test_bar_line();
     //edge_cases();
