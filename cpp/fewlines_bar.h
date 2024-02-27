@@ -16,7 +16,8 @@ namespace fewlines {
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
 
 
-// computes a + bin_size * bin_index and handles the case when bin_size * bin_index will overflow
+// computes a + bin_size * bin_index and handles the case when bin_size * bin_index will overflow,
+// but result would fit.
 template<typename num_t> 
 num_t multiply_add_no_overflow(num_t a, num_t bin_size, size_t bin_index) {
     static_assert(std::is_floating_point_v<num_t> == true);
@@ -34,7 +35,7 @@ std::optional<size_t> _bin_index_fp(num_t mn, num_t mx, size_t bins, num_t v) {
     static_assert(std::is_floating_point_v<num_t> == true);
 
     // sanity checks:
-    if (bins == 0 || mn > mx || !std::isfinite(mn) || !std::isfinite(mx)) {
+    if (bins == 0 || mn > mx || !std::isfinite(mn) || !std::isfinite(mx) || std::isnan(v)) {
         return std::nullopt;
     }
 
@@ -55,6 +56,9 @@ std::optional<size_t> _bin_index_fp(num_t mn, num_t mx, size_t bins, num_t v) {
         return 0;
     }
 
+
+    auto mn0 = mn, mx0 = mx, v0 = v;
+
     // check for overflow of interval length
     if (mn + std::numeric_limits<num_t>::max() < mx) {
         // handle overflow: just divide everything by 2.
@@ -72,21 +76,21 @@ std::optional<size_t> _bin_index_fp(num_t mn, num_t mx, size_t bins, num_t v) {
     // bin_index might be wrong in the underflow situation, when the interval is very large and 
     // the value is close to the boundary between buckets.
     // for example, consider mn = -1e100, mx = 1e100, bins = 2, v = -1000.
-    // correct answer is 0, but we'll return 1.
-    auto bin_size = (mx - mn) / bins;
-    auto expected_a = mn + bin_size * bin_index;
-    auto expected_b = mn + bin_size * bin_index + bin_size;
+    // correct answer is 0, but we'll return 1. Here we'll do computation in original scale.
+    auto bin_size = mx0 / bins - mn0 / bins;
+    auto expected_a = multiply_add_no_overflow(mn0, bin_size, bin_index);
+    auto expected_b = expected_a + bin_size;
 
     // right at the boundary - assume open intervals of the form [a0; b0), [a1; b1), ... [aN, bN].
-    if (expected_b == v) {
+    if (expected_b == v0) {
         if (bin_index + 1 < bins) {
             bin_index++;
         }
     } else
-    if (expected_a > v) {
+    if (expected_a > v0) {
         bin_index--;
     } else
-    if (expected_b < v) {
+    if (expected_b < v0) {
         bin_index++;
     }
 
@@ -416,11 +420,18 @@ void test_bin_index() {
 }
 
 void test_multiply_add_no_overflow() {
+    auto A = std::numeric_limits<long double>::lowest();
+    auto B = std::numeric_limits<long double>::max();
+
     assert(multiply_add_no_overflow(0.0, 10.0, 10) == 100.0);
-    assert(multiply_add_no_overflow(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2) == std::numeric_limits<double>::max());
+    assert(multiply_add_no_overflow(A, B, 2) == B);
+    assert(multiply_add_no_overflow(A, B / 4, 7) == (B / 4.0) * 3.0);
 }
 
 void test_bin_index_fp() {
+    auto A = std::numeric_limits<double>::lowest();
+    auto B = std::numeric_limits<double>::max();
+
     // corner cases
     assert(_bin_index_fp(0.0, 1.0, 0, 0.5).has_value() == false);
     assert(_bin_index_fp(-std::numeric_limits<double>::infinity(), 1.0, 1, 0.5).has_value() == false);
@@ -443,12 +454,16 @@ void test_bin_index_fp() {
     assert(_bin_index_fp(-1.0e100, 1.0e100, 2, -10000.0) == 0);
 
     // overflow double
-    assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 4, 100000.0) == 2);
+    assert(_bin_index_fp(A, B, 4, 100000.0) == 2);
 
     // overflow limit and underflow in value
-    assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2, std::numeric_limits<double>::denorm_min()) == 1);
-    // TODO: fix this case as well
-    //assert(_bin_index_fp(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), 2, - std::numeric_limits<double>::denorm_min()) == 0);
+    assert(_bin_index_fp(A, B, 2, std::numeric_limits<double>::min()) == 1);
+    assert(_bin_index_fp(A, B, 2, - std::numeric_limits<double>::min()) == 0);
+    assert(_bin_index_fp(A, B, 2, std::numeric_limits<double>::denorm_min()) == 1);
+    assert(_bin_index_fp(A, B, 2, - std::numeric_limits<double>::denorm_min()) == 0);
+    
+    // open interval handling
+    assert(_bin_index_fp(A, B, 2, 0.0) == 1);
 }
 
 void test_bar_line() {
