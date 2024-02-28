@@ -145,6 +145,12 @@ if __name__ == '__main__':
             self.assertEqual(_bin_index(0, 0, 1, 10), 0)
             self.assertEqual(_bin_index(0, 0, 1, -10), 0)
 
+
+            # test inclusive/exclusive intervals
+            for x in range(100):
+                self.assertEqual(_bin_index(0, 10, 100, x * 0.1), x)
+            self.assertEqual(_bin_index(0, 10, 100, 10.0), 99)
+
             for x in range(10):
                 self.assertEqual(_bin_index(0, 10, 10, x), x)
             self.assertEqual(_bin_index(0, 10, 10, 10), 9)
