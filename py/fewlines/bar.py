@@ -49,6 +49,15 @@ def _global_range(numbers):
         mn, mx = 0.0, 0.0
     return mn, mx
 
+def _time_header(left_val, bins, left_margin):
+    mn_text, mx_text = f' {left_val}|'[-left_margin:], 'now'
+    
+    line = '~' * bins
+    
+    if left_margin <= 0:
+        return line + f'|{mx_text}'
+    return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
+
 def _header(mn, mx, bins, left_margin, show_zero=True):
     mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
     
@@ -70,6 +79,24 @@ def bar_line(y, cells=bar_blocks) -> str:
     cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
     return ''.join([cell(v) for v in y])
 
+def bar_lines(numbers, bins, left_val, header=True, left_margin=20):
+    res = []
+    if header:
+        res.append(_time_header(left_val, bins, left_margin))
+
+    for title, values in numbers.items():
+        chart = bar_line(values)
+        if left_margin <= 0:
+            left = ''
+        else:
+            left = f'{title}|'[-left_margin:]
+            left = f'{left:>{left_margin}}'
+        
+        right = '|'
+        res.append(left + chart + right)
+
+    return res
+
 # horizon_line plots line using blocks and color - suitable for terminal output
 def horizon_line(y, color='green', cells=horizon_blocks) -> str:
     bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
@@ -84,8 +111,8 @@ def horizon_line(y, color='green', cells=horizon_blocks) -> str:
 #   header        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None):
-    mn, mx = _global_range(numbers)
+def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, custom_range=None):
+    mn, mx = custom_range if custom_range is not None else _global_range(numbers)
     res = []
 
     if header:
