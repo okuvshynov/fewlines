@@ -69,23 +69,28 @@ def _header(mn, mx, bins, left_margin, show_zero=True):
     return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
 # bar_line plots a line using provided blocks or default bar_blocks
-def bar_line(y, cells=bar_blocks) -> str:
+def bar_line(y, mx=None, cells=bar_blocks) -> str:
     if not y:
         return ""
-    Y = max(y)
+
+    Y = max(y) if mx is None else mx
     if Y == 0:
         return cells[0] * len(y)
     clamp = lambda v, a, b: max(a, min(v, b))
     cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
     return ''.join([cell(v) for v in y])
 
-def bar_lines(numbers, bins, left_val, header=True, left_margin=20):
+def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True):
     res = []
     if header:
         res.append(_time_header(left_val, bins, left_margin))
 
+    _, mx = _global_range(numbers)
+    if not shared_scale:
+        mx = None
+
     for title, values in numbers.items():
-        chart = bar_line(values)
+        chart = bar_line(values, mx=mx)
         if left_margin <= 0:
             left = ''
         else:
