@@ -2,7 +2,6 @@ import numpy as np
 from collections import defaultdict
 import time
 from enum import Enum
-
 from bar import bar_histogram, bar_histograms, bar_lines
 import math
 import random
@@ -41,17 +40,13 @@ aggregation = {
 
 def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
     charts = {}
+    now = time.time()
     for group in groups:
-        if isinstance(group, tuple):
-            counter_name, *agg = group
-            agg = 'avg' if not agg else agg[0]
-        else:
-            counter_name, agg = group, 'avg'
-        #print(counter_name, agg)
+        counter_name, *agg = group
+        agg = 'avg' if not agg else agg[0]
         series = fewlines_data.get(counter_name, [])
         counts = [0] * bins
         values = [0] * bins
-        now = time.time()
         bin_size_s = - offset_s / bins
         for timestamp, value in series:
             offset = now - timestamp
@@ -69,10 +64,7 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
     now = time.time()
     values = {}
     for group in groups:
-        if isinstance(group, tuple):
-            counter_name, *args = group
-        else:
-            counter_name = group
+        counter_name, *args = group
         series = fewlines_data.get(counter_name, [])
         values[counter_name] = [v for t, v in series if t - offset_s > now]
     
@@ -81,7 +73,7 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600) -> str:
     return histogram_group([counter_name], bins, left_margin, offset_s)
 
-charts = {
+chart_types = {
     'histogram': histogram_group,
     'timeseries': timeseries_group,
 }
@@ -92,12 +84,13 @@ def dashboard(config):
     bins = config.get("bins", 60)
     left_margin = config.get("left_margin", 20)
 
+    w = bins + left_margin + 1
+    res = ["=" * w]
+
     title = config.get("title")
     if title is not None:
-        extra = max(0, bins + left_margin - len(title) - 2)
-        title = "= " + title + " " + "=" * extra
-
-    res = [] if title is None else [title]
+        extra = max(0, w - len(title) - 3)
+        res.append("= " + title + " " + "=" * extra)
 
     for chart_group in config["charts"]:
         if not isinstance(chart_group, list):
@@ -105,15 +98,12 @@ def dashboard(config):
 
         values = defaultdict(list)
         for counter, chart, *args in chart_group:
-            # TODO: counter here should be 
-            #  - string of a counter name
-            #  - prefix/or regex for counter name
-            #  - list of the above
-            if chart in charts:
+            if chart in chart_types:
                 values[chart].append((counter, *args))
         
         for chart_type, v in values.items():
-            res.extend(charts[chart_type](v, bins, left_margin, t))
+            res.extend(chart_types[chart_type](v, bins, left_margin, t))
+        res.append("")
     return res
 
 def gen_timeseries():
@@ -121,8 +111,6 @@ def gen_timeseries():
     for lat in np.random.normal(size=100):
         timestamp = now - random.randint(0, 7200)
         add('ssd_read_latency', abs(lat), timestamp=timestamp)
-
-# need to get shared Y scale for timeseries
 
 if __name__ == '__main__':
     add('latency_ms', 1.2)

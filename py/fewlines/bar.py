@@ -71,14 +71,14 @@ def _header(mn, mx, bins, left_margin, show_zero=True):
 # bar_line plots a line using provided blocks or default bar_blocks
 def bar_line(y, mx=None, cells=bar_blocks) -> str:
     if not y:
-        return ""
+        return "", 0
 
     Y = max(y) if mx is None else mx
     if Y == 0:
-        return cells[0] * len(y)
+        return cells[0] * len(y), 0
     clamp = lambda v, a, b: max(a, min(v, b))
     cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
-    return ''.join([cell(v) for v in y])
+    return ''.join([cell(v) for v in y]), Y
 
 def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True):
     res = []
@@ -90,11 +90,11 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
         mx = None
 
     for title, values in numbers.items():
-        chart = bar_line(values, mx=mx)
+        chart, mxv = bar_line(values, mx=mx)
         if left_margin <= 0:
             left = ''
         else:
-            left = f'{title}|'[-left_margin:]
+            left = f'{title} [{mxv:.3g}]|'[-left_margin:]
             left = f'{left:>{left_margin}}'
         
         right = '|'
@@ -128,11 +128,11 @@ def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, cu
     histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
     _, freq_mx = _global_range(histograms)
     for title, values in histograms.items():
-        chart = bar_line(values, mx=freq_mx) if color is None else horizon_line(values, color=color)
+        chart, mxv = bar_line(values, mx=freq_mx) if color is None else horizon_line(values, color=color)
         if left_margin <= 0:
             left = ''
         else:
-            left = f'{title}|'[-left_margin:]
+            left = f'{title} [{mxv:.3g}]|'[-left_margin:]
             left = f'{left:>{left_margin}}'
         
         right = '|'
@@ -208,9 +208,9 @@ if __name__ == '__main__':
             self.assertEqual(_header(0, 10, 20, 10), "~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~|10")
 
         def test_bar_line(self):
-            self.assertEqual(bar_line([1,2,3]), "▂▅▇")
-            self.assertEqual(bar_line([]), "")
-            self.assertEqual(bar_line([0, 100]), " ▇")
+            self.assertEqual(bar_line([1,2,3])[0], "▂▅▇")
+            self.assertEqual(bar_line([])[0], "")
+            self.assertEqual(bar_line([0, 100])[0], " ▇")
 
         def test_histogram(self):
             self.assertEqual(_histogram([], 5, None, None), [0, 0, 0, 0, 0])
