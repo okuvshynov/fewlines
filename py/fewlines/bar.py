@@ -117,15 +117,18 @@ def horizon_line(y, color='green', cells=horizon_blocks) -> str:
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
 def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, custom_range=None):
+    # here mn, mx represent the min and max of values
     mn, mx = custom_range if custom_range is not None else _global_range(numbers)
+
     res = []
 
     if header:
         res.append(_header(mn, mx, bins=bins, left_margin=left_margin))
 
-    for title, values in numbers.items():
-        values = _histogram(values, bins, mn, mx)
-        chart = bar_line(values) if color is None else horizon_line(values, color=color)
+    histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
+    _, freq_mx = _global_range(histograms)
+    for title, values in histograms.items():
+        chart = bar_line(values, mx=freq_mx) if color is None else horizon_line(values, color=color)
         if left_margin <= 0:
             left = ''
         else:

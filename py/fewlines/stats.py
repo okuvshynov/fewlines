@@ -39,7 +39,7 @@ aggregation = {
     'count': agg_count
 }
 
-def timeseries_group(groups, bins=60, offset_s=-3600) -> str:
+def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
     charts = {}
     for group in groups:
         if isinstance(group, tuple):
@@ -47,7 +47,7 @@ def timeseries_group(groups, bins=60, offset_s=-3600) -> str:
             agg = 'avg' if not agg else agg[0]
         else:
             counter_name, agg = group, 'avg'
-        print(counter_name, agg)
+        #print(counter_name, agg)
         series = fewlines_data.get(counter_name, [])
         counts = [0] * bins
         values = [0] * bins
@@ -60,30 +60,12 @@ def timeseries_group(groups, bins=60, offset_s=-3600) -> str:
                 continue
             counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
         charts[f'{counter_name}.{agg}'] = list(reversed(values))
-    return bar_lines(charts, bins, f'-{bins * bin_size_s}s')
+    return bar_lines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin)
 
-def timeseries(counter_name, bins=60, offset_s=-3600, agg='avg') -> str:
-    series = fewlines_data.get(counter_name, [])
-    counts = [0] * bins
-    values = [0] * bins
-    now = time.time()
-    bin_size_s = - offset_s / bins
-    for timestamp, value in series:
-        offset = now - timestamp
-        bin = int(math.floor(offset / bin_size_s))
-        if bin < 0 or bin >= bins:
-            continue
-        counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
-    return bar_lines({f'{counter_name}.{agg}': list(reversed(values))}, bins, f'-{bins * bin_size_s}s')
+def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg') -> str:
+    return timeseries_group([(counter_name, agg)], bins, left_margin, offset_s)
 
-def histogram(counter_name, bins=60, offset_s=-3600) -> str:
-    series = fewlines_data.get(counter_name, [])
-    now = time.time()
-    values = [v for t, v in series if t - offset_s > now]
-    
-    return bar_histogram(values, counter_name, bins=bins, header=True)
-
-def histogram_group(groups, bins=60, offset_s=-3600) -> str:
+def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
     now = time.time()
     values = {}
     for group in groups:
@@ -94,13 +76,14 @@ def histogram_group(groups, bins=60, offset_s=-3600) -> str:
         series = fewlines_data.get(counter_name, [])
         values[counter_name] = [v for t, v in series if t - offset_s > now]
     
-    return bar_histograms(values, bins=bins, header=True)
+    return bar_histograms(values, bins=bins, header=True, left_margin=left_margin)
+
+def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600) -> str:
+    return histogram_group([counter_name], bins, left_margin, offset_s)
 
 charts = {
     'histogram': histogram_group,
     'timeseries': timeseries_group,
-    'timeseries_group': timeseries_group,
-    'histogram_group': histogram_group,
 }
 
 # TODO some autoconf - generate dashboard from everything we have?
@@ -130,13 +113,12 @@ def dashboard(config):
                 values[chart].append((counter, *args))
         
         for chart_type, v in values.items():
-            print(v)
-            res.extend(charts[chart_type](v, bins, t))
+            res.extend(charts[chart_type](v, bins, left_margin, t))
     return res
 
 def gen_timeseries():
     now = time.time()
-    for lat in np.random.normal(size=10000):
+    for lat in np.random.normal(size=100):
         timestamp = now - random.randint(0, 7200)
         add('ssd_read_latency', abs(lat), timestamp=timestamp)
 
@@ -164,18 +146,20 @@ if __name__ == '__main__':
         "title": "Test Dashboard",
         "charts": [
             ('latency_ms', 'timeseries'),
-            ('latency_ms', 'histogram'),
             ('error', 'histogram'),
-            ('ssd_read_latency', 'histogram'),
             [
-                ('ssd_read_latency', 'timeseries_group'),
-                ('ssd_read_latency', 'timeseries_group', 'max'),
-                ('ssd_read_latency', 'timeseries_group', 'min'),
+                ('ssd_read_latency', 'histogram'),
+                ('latency_ms', 'histogram'),
+            ],
+            [
+                ('ssd_read_latency', 'timeseries'),
+                ('ssd_read_latency', 'timeseries', 'max'),
+                ('ssd_read_latency', 'timeseries', 'min'),
             ]
         ],
         "time": -3600, # default -3600
         "bins": 40, # default 60
-        "left_margin": 20, # default 20
+        "left_margin": 40, # default 20
     }
     for s in dashboard(conf):
         print(s)
