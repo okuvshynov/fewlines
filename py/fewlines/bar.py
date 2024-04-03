@@ -69,7 +69,7 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
         mx = None
 
     for title, values in numbers.items():
-        chart, mxv = bar_line(values, mx=mx)
+        chart, mxv = bar_line(values, max_y=mx)
         if left_margin <= 0:
             left = ''
         else:
@@ -81,6 +81,35 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
 
     return res
 
+def bar_multilines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True, n_lines=3):
+    res = []
+    if header:
+        res.append(_time_header(left_val, bins, left_margin))
+
+    _, mx = _global_range(numbers)
+    if not shared_scale:
+        mx = None
+
+    for title, values in numbers.items():
+        charts, mxv = bar_multiline(values, max_y=mx)
+        if left_margin <= 0:
+            left_top = ''
+            left = ''
+            left_bottom = ''
+        else:
+            left_top = f'{mxv:.3g} >|'[-left_margin:]
+            left_top = f'{left_top:>{left_margin}}'
+            left_bottom = f'{title}|'[-left_margin:]
+            left_bottom = f'{left_bottom:>{left_margin}}'
+            left = f'{"|":>{left_margin}}'
+
+        
+        right = '|'
+        res.append(left_top + charts[0] + right)
+        res.extend(left + chart + right for chart in charts[1:-1])
+        res.append(left_bottom + charts[-1] + right)
+
+    return res
 
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on

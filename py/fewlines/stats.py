@@ -1,8 +1,7 @@
 import numpy as np
 from collections import defaultdict
 import time
-from enum import Enum
-from bar import bar_histogram, bar_histograms, bar_lines
+from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
 import math
 import random
 
@@ -38,7 +37,7 @@ aggregation = {
     'count': agg_count
 }
 
-def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
+def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     charts = {}
     now = time.time()
     for group in groups:
@@ -55,12 +54,14 @@ def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
                 continue
             counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
         charts[f'{counter_name}.{agg}'] = list(reversed(values))
+    if n_lines > 1:
+        return bar_multilines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines)
     return bar_lines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin)
 
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg') -> str:
     return timeseries_group([(counter_name, agg)], bins, left_margin, offset_s)
 
-def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
+def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     now = time.time()
     values = {}
     for group in groups:
@@ -68,10 +69,12 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600) -> str:
         series = fewlines_data.get(counter_name, [])
         values[counter_name] = [v for t, v in series if t - offset_s > now]
     
+    if n_lines > 1:
+        return bar_histograms_multiline(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines)
     return bar_histograms(values, bins=bins, header=True, left_margin=left_margin)
 
-def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600) -> str:
-    return histogram_group([counter_name], bins, left_margin, offset_s)
+def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
+    return histogram_group([counter_name], bins, left_margin, offset_s, n_lines)
 
 chart_types = {
     'histogram': histogram_group,
@@ -102,13 +105,13 @@ def dashboard(config):
                 values[chart].append((counter, *args))
         
         for chart_type, v in values.items():
-            res.extend(chart_types[chart_type](v, bins, left_margin, t))
+            res.extend(chart_types[chart_type](v, bins, left_margin, t, n_lines=2))
         res.append("")
     return res
 
 def gen_timeseries():
     now = time.time()
-    for lat in np.random.normal(size=100):
+    for lat in np.random.normal(size=1000):
         timestamp = now - random.randint(0, 7200)
         add('ssd_read_latency', abs(lat), timestamp=timestamp)
 
