@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 import time
-from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
+from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines, horizon_line, horizon_multiline
 import math
 import random
 
@@ -37,7 +37,7 @@ aggregation = {
     'count': agg_count
 }
 
-def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
+def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
     charts = {}
     now = time.time()
     for group in groups:
@@ -55,13 +55,13 @@ def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1)
             counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
         charts[f'{counter_name}.{agg}'] = list(reversed(values))
     if n_lines > 1:
-        return bar_multilines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines)
+        return bar_multilines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines, color=color)
     return bar_lines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin)
 
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg') -> str:
     return timeseries_group([(counter_name, agg)], bins, left_margin, offset_s)
 
-def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
+def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color='green') -> str:
     now = time.time()
     values = {}
     for group in groups:
@@ -70,8 +70,8 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1) 
         values[counter_name] = [v for t, v in series if t - offset_s > now]
     
     if n_lines > 1:
-        return bar_histograms_multiline(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines)
-    return bar_histograms(values, bins=bins, header=True, left_margin=left_margin)
+        return bar_histograms_multiline(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
+    return bar_histograms(values, bins=bins, header=True, left_margin=left_margin, color=color)
 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     return histogram_group([counter_name], bins, left_margin, offset_s, n_lines)

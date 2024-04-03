@@ -64,12 +64,12 @@ colors = {
 }
 
 # horizon_line plots line using blocks and color - suitable for terminal output
-def horizon_line(y, color='green', cells=horizon_blocks) -> str:
+def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
     bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
     cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
-    return bar_line(y, cells=cells)
+    return bar_line(y, max_y=max_y, cells=cells)
 
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts

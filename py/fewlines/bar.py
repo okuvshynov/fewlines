@@ -59,7 +59,7 @@ def _header(mn, mx, bins, left_margin, show_zero=True):
     return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
 
-def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True):
+def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True, color=None):
     res = []
     if header:
         res.append(_time_header(left_val, bins, left_margin))
@@ -69,7 +69,7 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
         mx = None
 
     for title, values in numbers.items():
-        chart, mxv = bar_line(values, max_y=mx)
+        chart, mxv = bar_line(values, max_y=mx) if color is None else horizon_line(values, color=color, max_y=mx)
         if left_margin <= 0:
             left = ''
         else:
@@ -81,7 +81,7 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
 
     return res
 
-def bar_multilines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True, n_lines=3):
+def bar_multilines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True, n_lines=3, color=None):
     res = []
     if header:
         res.append(_time_header(left_val, bins, left_margin))
@@ -91,7 +91,7 @@ def bar_multilines(numbers, bins, left_val, header=True, left_margin=20, shared_
         mx = None
 
     for title, values in numbers.items():
-        charts, mxv = bar_multiline(values, max_y=mx)
+        charts, mxv = bar_multiline(values, max_y=mx) if color is None else horizon_multiline(values, n_lines=n_lines, color=color, max_y=mx)
         if left_margin <= 0:
             left_top = ''
             left = ''
