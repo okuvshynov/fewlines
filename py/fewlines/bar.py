@@ -1,7 +1,6 @@
 import math
 
-# not using the largest block so that two histograms on two lines won't collide
-bar_blocks     = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
+from fewlines.line import bar_line, bar_multiline
 
 # For horizon we can use the largest block, as we'll use color coding
 horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
@@ -68,17 +67,6 @@ def _header(mn, mx, bins, left_margin, show_zero=True):
         return line + f'|{mx_text}'
     return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
-# bar_line plots a line using provided blocks or default bar_blocks
-def bar_line(y, mx=None, cells=bar_blocks) -> str:
-    if not y:
-        return "", 0
-
-    Y = max(y) if mx is None else mx
-    if Y == 0:
-        return cells[0] * len(y), 0
-    clamp = lambda v, a, b: max(a, min(v, b))
-    cell = lambda v: cells[clamp(int(v * len(cells) / Y), 0, len(cells) - 1)]
-    return ''.join([cell(v) for v in y]), Y
 
 def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale=True):
     res = []
@@ -108,7 +96,7 @@ def horizon_line(y, color='green', cells=horizon_blocks) -> str:
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
     cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
-    return bar_line(y, cells)
+    return bar_line(y, cells=cells)
 
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
@@ -128,7 +116,7 @@ def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, cu
     histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
     _, freq_mx = _global_range(histograms)
     for title, values in histograms.items():
-        chart, mxv = bar_line(values, mx=freq_mx) if color is None else horizon_line(values, color=color)
+        chart, mxv = bar_line(values, max_y=freq_mx) if color is None else horizon_line(values, color=color)
         if left_margin <= 0:
             left = ''
         else:
@@ -137,6 +125,40 @@ def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, cu
         
         right = '|'
         res.append(left + chart + right)
+
+    return res
+
+# Plot multiple histograms on the same scale.
+#   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
+#   bins - how many characters to use. Histogram will use that many bins.
+#   header        - show a line with range at the top
+#   left_margin - width of the space for each data title
+#   color       - name of the colorscheme. If None, uses blocks only.
+def bar_histograms_multiline(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=3):
+    # here mn, mx represent the min and max of values
+    mn, mx = custom_range if custom_range is not None else _global_range(numbers)
+
+    res = []
+
+    if header:
+        res.append(_header(mn, mx, bins=bins, left_margin=left_margin))
+
+    histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
+    _, freq_mx = _global_range(histograms)
+    for title, values in histograms.items():
+        charts, mxv = bar_multiline(values, max_y=freq_mx, n_lines=n_lines)
+        if left_margin <= 0:
+            left_top = ''
+            left = ''
+        else:
+            left_top = f'{title} [{mxv:.3g}]|'[-left_margin:]
+            left_top = f'{left_top:>{left_margin}}'
+            left = f'{"|":>{left_margin}}'
+        
+        right = '|'
+
+        res.append(left_top + charts[0] + right)
+        res.extend(left + chart + right for chart in charts[1:])
 
     return res
 
@@ -162,6 +184,10 @@ if __name__ == '__main__':
 
     # bar chart without colors
     for l in bar_histograms(data, bins=40):
+        print(l)
+
+    # bar chart without colors
+    for l in bar_histograms_multiline(data, bins=40):
         print(l)
 
     for l in bar_histograms({'empty': []}):
@@ -223,7 +249,7 @@ if __name__ == '__main__':
             self.assertEqual(bar_histograms({'A': [0], 'B': [1]}, 10, header=False, left_margin=0), ["▇         |", "         ▇|"])
             self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, header=False, left_margin=0), ["▇        ▇|", "         ▇|"])
             self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, left_margin=0), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
-            self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, left_margin=5), ["~~ 0|0~~~~~~~~~|1", "   A|▇        ▇|", "   B|         ▇|"])
+            self.assertEqual(bar_histograms({'A': [0, 1], 'B': [1]}, 10, left_margin=10), ["~~~~~~~ 0|0~~~~~~~~~|1", "    A [1]|▇        ▇|", "    B [1]|         ▇|"])
 
 
     unittest.main()
