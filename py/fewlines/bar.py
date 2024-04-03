@@ -1,15 +1,6 @@
 import math
 
-from fewlines.line import bar_line, bar_multiline
-
-# For horizon we can use the largest block, as we'll use color coding
-horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
-
-# colorschemes
-colors = {
-    'green': [-1, 150, 107, 22],
-    'red'  : [-1, 196, 124, 52],
-}
+from fewlines.line import bar_line, bar_multiline, colors, horizon_line, horizon_multiline
 
 def _bin_index(min_val, max_val, bins, x):
     if min_val == max_val:
@@ -90,13 +81,6 @@ def bar_lines(numbers, bins, left_val, header=True, left_margin=20, shared_scale
 
     return res
 
-# horizon_line plots line using blocks and color - suitable for terminal output
-def horizon_line(y, color='green', cells=horizon_blocks) -> str:
-    bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
-    fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
-    rst = '\33[0m'
-    cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
-    return bar_line(y, cells=cells)
 
 # Plot multiple histograms on the same scale.
 #   numbers     - a dictionary{str: list_of_numbers} of data to plot distribution on
@@ -134,7 +118,7 @@ def bar_histograms(numbers, bins=60, header=True, left_margin=20, color=None, cu
 #   header        - show a line with range at the top
 #   left_margin - width of the space for each data title
 #   color       - name of the colorscheme. If None, uses blocks only.
-def bar_histograms_multiline(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=3):
+def bar_histograms_multiline(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=3, color=None):
     # here mn, mx represent the min and max of values
     mn, mx = custom_range if custom_range is not None else _global_range(numbers)
 
@@ -146,7 +130,7 @@ def bar_histograms_multiline(numbers, bins=60, header=True, left_margin=20, cust
     histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
     _, freq_mx = _global_range(histograms)
     for title, values in histograms.items():
-        charts, mxv = bar_multiline(values, max_y=freq_mx, n_lines=n_lines)
+        charts, mxv = bar_multiline(values, max_y=freq_mx, n_lines=n_lines) if color is None else horizon_multiline(values, color=color)
         if left_margin <= 0:
             left_top = ''
             left = ''
@@ -188,6 +172,10 @@ if __name__ == '__main__':
 
     # bar chart without colors
     for l in bar_histograms_multiline(data, bins=40):
+        print(l)
+
+    # bar chart without colors
+    for l in bar_histograms_multiline(data, bins=40, color='green'):
         print(l)
 
     for l in bar_histograms({'empty': []}):
