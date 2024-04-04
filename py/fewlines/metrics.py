@@ -1,11 +1,13 @@
 import numpy as np
-from collections import defaultdict
 import time
 from fewlines.charts import histogram_chart, line_chart
 import math
 
+from collections import defaultdict, deque
+from functools import partial
 
-fewlines_data = defaultdict(list)
+default_maxlen = 16384
+fewlines_data = defaultdict(partial(deque, maxlen=default_maxlen))
 
 def add(counter_name, value, timestamp=None, aggregation=None):
     timestamp = time.time() if timestamp is None else timestamp
