@@ -36,21 +36,23 @@ def _oneline_legend_render(lines, title, max_value, width):
 
 def _render_subplots(numbers, n_lines, left_margin, color):
     res = []
-    legend_renderer = _oneline_legend_render if n_lines == 1 else _multiline_legend_render
     _, max_y = _global_range(numbers)
-    for title, values in numbers.items():
-        lines, max_value = multiline(values, max_y=max_y, n_lines=n_lines) if color is None else horizon_multiline(values, color=color, max_y=max_y, n_lines=n_lines)
+    for title, (values, args) in numbers.items():
+        current_color = args.get('color', color)
+        current_n_lines = args.get('n_lines', n_lines)
+        lines, max_value = multiline(values, max_y=max_y, n_lines=current_n_lines) if current_color is None else horizon_multiline(values, color=current_color, max_y=max_y, n_lines=current_n_lines)
+        legend_renderer = _oneline_legend_render if current_n_lines == 1 else _multiline_legend_render
         res.extend(legend_renderer(lines, title, max_value, width=left_margin))
     return res
 
-def line_chart(numbers, bins, left_val, header=True, left_margin=20, n_lines=3, color=None):
+def line_chart(numbers, bins, left_val, header=True, left_margin=20, n_lines=1, color=None):
     res = [_line_header(left_val, bins, left_margin)] if header else []
     return res + _render_subplots(numbers, n_lines, left_margin, color)
 
-def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=3, color=None):
+def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=1, color=None):
     # here mn, mx represent the min and max of values
     mn, mx = custom_range if custom_range is not None else _global_range(numbers)
-    histograms = {k: _histogram(v, bins, mn, mx) for k, v in numbers.items()}
+    histograms = {k: (_histogram(v, bins, mn, mx), args) for k, (v, args) in numbers.items()}
 
     res = [_header(mn, mx, bins=bins, left_margin=left_margin)] if header else []
     return res + _render_subplots(histograms, n_lines, left_margin, color)

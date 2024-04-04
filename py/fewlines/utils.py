@@ -20,11 +20,11 @@ def _histogram(data, bins, min_val, max_val):
     
     return bin_counts
 
-# for things like min/max for dict of lists
+# for things like min/max for dict of str: tuple(list, {})
 def _global_stat(numbers, fn):
     res = None
     if numbers:  # check if dictionary is not empty
-        non_empty_values = [fn(v) for v in numbers.values() if v]
+        non_empty_values = [fn(v) for v, _ in numbers.values() if v]
         if non_empty_values:
             res = fn(non_empty_values) 
     return res

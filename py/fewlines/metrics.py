@@ -37,37 +37,39 @@ aggregation = {
     'count': agg_count
 }
 
-def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
+def timeseries_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
     charts = {}
     now = time.time()
-    for group in groups:
-        counter_name, *agg = group
-        agg = 'avg' if not agg else agg[0]
+    for counter_name, args in counters:
         series = fewlines_data.get(counter_name, [])
         counts = [0] * bins
         values = [0] * bins
         bin_size_s = - offset_s / bins
+        agg = args.get('agg', 'avg')
         for timestamp, value in series:
             offset = now - timestamp
             bin = int(math.floor(offset / bin_size_s))
             if bin < 0 or bin >= bins:
                 continue
-            counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
-        charts[f'{counter_name}.{agg}'] = list(reversed(values))
-    return line_chart(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines, color=color)
+            counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value)
+        charts[f'{counter_name}.{agg}'] = (list(reversed(values)), args)
+    return line_chart(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=1, color=None)
+
+def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
+    now = time.time()
+    charts = {}
+    for counter_name, args in counters:
+        series = fewlines_data.get(counter_name, [])
+        # TODO: values in future?
+        charts[counter_name] = ([v for t, v in series if t - offset_s >= now], args)
+    
+    return histogram_chart(charts, bins=bins, header=True, left_margin=left_margin, n_lines=1, color=None)
+
+
+## TODO simplify these
 
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg') -> str:
     return timeseries_group([(counter_name, agg)], bins, left_margin, offset_s)
-
-def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color='green') -> str:
-    now = time.time()
-    values = {}
-    for group in groups:
-        counter_name, *args = group
-        series = fewlines_data.get(counter_name, [])
-        values[counter_name] = [v for t, v in series if t - offset_s > now]
-    
-    return histogram_chart(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     return histogram_group([(counter_name, )], bins, left_margin, offset_s, n_lines)
