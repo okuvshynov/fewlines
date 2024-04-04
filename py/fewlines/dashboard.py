@@ -53,7 +53,7 @@ if __name__ == '__main__':
     import random
 
     now = time.time()
-    for lat in np.random.normal(size=1000):
+    for lat in np.random.normal(size=10000):
         timestamp = now - random.randint(0, 7200)
         add('ssd_read_latency', abs(lat), timestamp=timestamp)
 
