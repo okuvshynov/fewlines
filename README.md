@@ -1,10 +1,12 @@
-# fewlines
+# fewlines - log your dashboard
 
 Whether we like it or not, we debug things by putting print statements around.
 
 `fewlines` is a supplement for this, allowing to plot bar charts which only take few lines in a terminal output, but can be a very useful piece of information.
+In a more extended form fewlines can be used for logging collections of charts in a dashboard-like form.
 
-Currently python, js and c++20 version.
+Currently python
+c++ and js versions in progress and experimental.
 
 Requires Unicode block characters.
 Horizon-style color output requires terminal with 256 ANSI colors.
@@ -44,70 +46,94 @@ python installation:
 pip install fewlines
 ```
 
-c++ installation:
-
-copy header file, try out the demo:
-
-```
-$ c++ -std=c++2a -x c++ ./fewlines_bar.h -I. -D__FEWLINES_DEMO_ -o /tmp/bar_demo && /tmp/bar_demo
-
-bar_line: 
- ▁▂▃▄▄▅▆▇▇
-
-bar_histogram: 
-                ▁▁▁▂▃▃▄▄▅▆▆▇▇▇▇▇▇▇▆▅▄▄▃▂▂▁▁▁                
-
-empty bar_histogram: 
-                                                            
-
-bar_histograms<vector<list>>: 
-~~~~~~~~~~~~~ -3.54|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~|2.61
-~~~~~~~~~~~~~~~ one|                    ▁▁ ▁  ▁▂▁▂▆▁▁▁▂▄▄▅▇▃▂▄▁▁▅  ▄▁  ▁  ▂ ▁   |
-~~~~~~~~~~~~~~~ two|         ▁  ▁  ▁▁ ▄▂▄▂▂▄▂▅▅▁▆▅▇▄▃▇▅▅▄▂▃▇▄▅▄▂▅▁ ▂▁ ▁   ▂     |
-
-bar_histograms<map<vector>>: 
-~~~~~~~~~~~~~ -3.11|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.16
-~~~~~~~~~~~~~~ four|            ▁ ▂▂▂▂▂▄▅▅▄▅▄▅▆▅▇▄▇▅▆▅▃▂▄▆▃▄▅▁▁▂▁▁▁  ▁▁         |
-~~~~~~~~~~~~~ three|        ▁     ▁▁ ▁▁▂▄▄▂▂▄▃▄▃▃▂▃▆▇▄▃▃▂▂▁▃▁▁▁▂▁ ▁  ▁  ▁   ▁   |
-
-bar_histograms<map<set>>: 
-~~~~~~~~~~~~~ -3.38|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|3.43
-~~~~~~~~~~~~~~ five|          ▁   ▁▁▂▂▄▃▂▃▅▄▅▆▆▇▅▄▅▄▅▅▅▅▄▃▂▃▃▂▂▁▂▁              |
-~~~~~~~~~~~~~~~ six|            ▁▁ ▂▂▂▂▃▃▅▃▄▅▅▆▇▇▅▇▇▅▅▅▅▄▃▄▁▂▄▁▄▁▁▂             |
-
-empty bar_histograms<map<set>>: 
-~~~~~~~~~~~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|1
-~~~~~~~~~~~ empty A|                                                            |
-~~~~~~~~~~~ empty B|                                                            |
-```
 
 ## Usage example
 
 
-python
+
+### Basic charts
+
 ```
+from fewlines import charts as fc
 import numpy as np
-data = {'title_A': list(np.random.normal(size=10000))}
 
-# horizon with colors - works in terminals with ANSI color codes support
-for l in bar_histograms(data, chart_width=40, color='green'):
+A = np.random.normal(size=100)
+print('Just the list of numbers')
+for l in fc.histogram_chart(A):
     print(l)
-
-# bar chart without colors - can be used in text log files, as long as Unicode characters are available
-for l in bar_histograms(data, chart_width=40):
+print('the list of numbers with extra options')
+for l in fc.histogram_chart((A, {'n_lines': 3})):
     print(l)
-
+print('the dict title -> numbers')
+for l in fc.histogram_chart({'series_A': A}):
+    print(l)
+print('the dict title -> numbers, options')
+for l in fc.histogram_chart({'series_A': (A, {'n_lines': 3})}):
+    print(l)
 ```
 
-c++
+Output:
+Note that multi-line charts rendering might depend on terminal spacing settings. Here in markdown it is messed up, so I'm attaching it as image.
+
+<img width="516" alt="Screenshot 2024-04-04 at 11 20 12 AM" src="https://github.com/okuvshynov/fewlines/assets/661042/89c8d036-9e86-400c-83ff-47bc35affd59">
+
+
+### Dashboards
+
 ```
-c++ -std=c++2a -x c++ ./bar.h -I. -D__FEWLINES_DEMO_ -o ./bar_demo && ./bar_demo
+from fewlines import metrics as fm
+from fewlines import dashboard as fd
+import numpy as np
+import time
+
+# logging data somewhere
+for i, v in enumerate(np.random.lognormal(mean=1.0, sigma=0.7, size=1000)):
+    fm.add('ssd_read_latency', v, time.time() - i)
+for i, v in enumerate(np.random.lognormal(mean=3.0, sigma=0.7, size=1500)):
+    fm.add('nw_recv_latency', v, time.time() - i)
+
+print("\n## Default one-line dashboards with wildcard")
+for s in fd.histograms('*latency'):
+    print(s)
+
+for s in fd.timeseries('*latency'):
+    print(s)
+
+print()
+print('\n## two histograms with separate scales with larger height and horizon colors')
+for s in fd.dashboard({"charts": [('*latency', 'histogram')], "n_lines": 3, "color": 'green'}):
+    print(s) 
+
+print()
+print('\n## two histograms sharing the scale as they are part of the same group with larger height and horizon colors')
+for s in fd.dashboard({"charts": [[('*latency', 'histogram')]], "n_lines": 3, "color": 'green'}):
+    print(s)
+
+print()
+conf = {
+    "title": "Custom Dashboard",
+    "charts": [
+        ('ssd_read_latency', 'timeseries', {'n_lines': 3, 'color': None}),
+        [
+            ('ssd_read_latency', 'timeseries'),
+            ('ssd_read_latency', 'timeseries', {'agg': 'max'}),
+            ('ssd_read_latency', 'timeseries', {'agg': 'min'}),
+        ],
+        ('ssd_read_latency', 'histogram', {'n_lines': 4, 'color': 'green'}),
+        ('ssd_read_latency', 'histogram', {'n_lines': 4, 'color': 'gray'}),
+        ('ssd_read_latency', 'histogram', {'n_lines': 6, 'color': None}),
+    ],
+    "time": -600, # default -3600
+    "bins": 60, # default 60
+    "left_margin": 40, # default 30
+    "n_lines": 3,
+    "color": None,
+}
+print('\n## detailed complicated config with different aggregations')
+for s in fd.dashboard(conf):
+    print(s)
 ```
 
-## TODO
+Output:
 
-```
-[ ] fix overflows in c++ implementations
-[ ] what's most useful way to handle nan, inf, denorm numbers
-[ ] joint test cases to check consistency among implementations
-```
+<img width="668" alt="Screenshot 2024-04-04 at 11 18 33 AM" src="https://github.com/okuvshynov/fewlines/assets/661042/5c95a06d-1182-44b8-a4af-9949ca8b68a7">
