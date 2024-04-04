@@ -2,6 +2,7 @@ import numpy as np
 import time
 from fewlines.charts import histogram_chart, line_chart
 import math
+import fnmatch, re
 
 from collections import defaultdict, deque
 from functools import partial
@@ -38,6 +39,14 @@ aggregation = {
     'sum': agg_sum,
     'count': agg_count
 }
+
+def counter_expand(counter):
+    res = []
+    pattern = re.compile(fnmatch.translate(counter))
+    for counter_name in fewlines_data.keys():
+        if pattern.match(counter_name):
+            res.append(counter_name)
+    return res
 
 def timeseries_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
     charts = {}

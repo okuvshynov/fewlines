@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from fewlines.metrics import histogram_group, timeseries_group, add
+from fewlines.metrics import histogram_group, timeseries_group, add, counter_expand
 
 chart_types = {
     'histogram': histogram_group,
@@ -8,8 +8,18 @@ chart_types = {
 }
 
 # TODO some autoconf - generate dashboard from everything we have?
-def dashboard(config):
+# some configuration shortcuts might include
+# adding chart by some prefix:
+#
+"""
+    conf = {
+        "charts": [('ssd_read_*', 'histogram')],
+    }
+"""
 
+
+
+def dashboard(config):
     # these are global settings, no override
     t = config.get("time", -3600)
     bins = config.get("bins", 60)
@@ -31,19 +41,37 @@ def dashboard(config):
         res.append("=" * w)
 
     for chart_group in config["charts"]:
+        new_groups = []
         if not isinstance(chart_group, list):
-            chart_group = [chart_group]
+            
+            # we had individual counter here. expand it as individual counters within their own group
+            for counter_name in counter_expand(chart_group[0]):
+                new_groups.append([(counter_name, ) + chart_group[1:]])
+        else:
+            # we had a group of counters, expand them within the group
+            for counter_name, chart_type, *args in chart_group:
+                new_group = []
+                for expanded_counter_name in counter_expand(counter_name):
+                    new_group.append((expanded_counter_name, chart_type, *args))
+                new_groups.append(new_group)
 
-        values = defaultdict(list)
-        for counter, chart_type, *args in chart_group:
-            kvargs = args[0] if args and isinstance(args[0], dict) else {}
-            if chart_type in chart_types:
-                values[chart_type].append((counter, {**base_kvargs, **kvargs}))
-        
-        for chart_type, counters in values.items():
-            res.extend(chart_types[chart_type](counters, bins, left_margin, t))
-        res.append("")
+        for new_group in new_groups:
+            values = defaultdict(list)
+            for counter, chart_type, *args in new_group:
+                kvargs = args[0] if args and isinstance(args[0], dict) else {}
+                if chart_type in chart_types:
+                    values[chart_type].append((counter, {**base_kvargs, **kvargs}))
+            
+            for chart_type, counters in values.items():
+                res.extend(chart_types[chart_type](counters, bins, left_margin, t))
+            res.append("")
     return res
+
+def histograms(pattern):
+    return dashboard({"charts": [(pattern, 'histogram')],})
+
+def timeseries(pattern):
+    return dashboard({"charts": [(pattern, 'timeseries')],})
 
 if __name__ == '__main__':
     # tests/demo   
@@ -66,7 +94,7 @@ if __name__ == '__main__':
     #   - color and n_lines can be supplied at the dashboard level as well, and overridden
 
     conf = {
-        "title": "Test Dashboard",
+        "title": "Custom Dashboard",
         "charts": [
             ('ssd_read_latency', 'timeseries', {'n_lines': 3, 'color': None}),
             [
@@ -85,11 +113,33 @@ if __name__ == '__main__':
         "color": None,
     }
 
-    mu, sigma = 1.0, 0.7
-    sample_size = 100
-    while True:
-        for s in dashboard(conf):
-            print(s)
-        for lat in np.random.lognormal(mean=mu, sigma=sigma, size=sample_size):
-            add('ssd_read_latency', abs(lat))
-        time.sleep(0.4)
+    for lat in np.random.lognormal(mean=1.0, sigma=0.7, size=1000):
+        add('ssd_read_latency', abs(lat))
+    for lat in np.random.lognormal(mean=3.0, sigma=0.7, size=1500):
+        add('recv_latency', abs(lat))
+
+    for s in dashboard(conf):
+        print(s)
+
+    # default dashboard
+    for s in histograms('*latency'):
+        print(s)
+
+    for s in timeseries('*latency'):
+        print(s)
+
+    print('## two separate histograms')
+    for s in dashboard({"charts": [('*latency', 'histogram')],}):
+        print(s)
+
+    print('## two histograms sharing the scale as they are part of the same group')
+    for s in dashboard({"charts": [[('*latency', 'histogram')]]}):
+        print(s)
+
+    print('## two histograms sharing the scale as they are part of the same group with horizon colors')
+    for s in dashboard({"charts": [[('*latency', 'histogram')]], "color": 'gray'}):
+        print(s) 
+
+    print('## two histograms sharing the scale as they are part of the same group with larger height and horizon colors')
+    for s in dashboard({"charts": [[('*latency', 'histogram')]], "n_lines": 3, "color": 'green'}):
+        print(s) 
