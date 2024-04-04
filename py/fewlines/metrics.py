@@ -65,9 +65,6 @@ def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1
     
     return histogram_chart(charts, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
 
-
-## TODO simplify these
-
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg', n_lines=1, color=None) -> str:
     return timeseries_group([(counter_name, {'agg': agg})], bins, left_margin, offset_s, n_lines=n_lines, color=color)
 
