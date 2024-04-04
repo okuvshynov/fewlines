@@ -1,9 +1,9 @@
 import numpy as np
 from collections import defaultdict
 import time
-from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
+from fewlines.charts import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
 import math
-import random
+
 
 fewlines_data = defaultdict(list)
 
@@ -76,45 +76,6 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     return histogram_group([(counter_name, )], bins, left_margin, offset_s, n_lines)
 
-chart_types = {
-    'histogram': histogram_group,
-    'timeseries': timeseries_group,
-}
-
-# TODO some autoconf - generate dashboard from everything we have?
-def dashboard(config):
-    t = config.get("time", -3600)
-    bins = config.get("bins", 60)
-    left_margin = config.get("left_margin", 20)
-
-    w = bins + left_margin + 1
-    res = ["=" * w]
-
-    title = config.get("title")
-    if title is not None:
-        extra = max(0, w - len(title) - 3)
-        res.append("= " + title + " " + "=" * extra)
-
-    for chart_group in config["charts"]:
-        if not isinstance(chart_group, list):
-            chart_group = [chart_group]
-
-        values = defaultdict(list)
-        for counter, chart, *args in chart_group:
-            if chart in chart_types:
-                values[chart].append((counter, *args))
-        
-        for chart_type, v in values.items():
-            res.extend(chart_types[chart_type](v, bins, left_margin, t, n_lines=2))
-        res.append("")
-    return res
-
-def gen_timeseries():
-    now = time.time()
-    for lat in np.random.normal(size=1000):
-        timestamp = now - random.randint(0, 7200)
-        add('ssd_read_latency', abs(lat), timestamp=timestamp)
-
 if __name__ == '__main__':
     add('latency_ms', 1.2)
     add('latency_ms', 1.3)
@@ -130,27 +91,3 @@ if __name__ == '__main__':
         print(h)
     for h in histogram('latency_ms'):
         print(h)
-
-    print()
-    gen_timeseries()
-    conf = {
-        "title": "Test Dashboard",
-        "charts": [
-            ('latency_ms', 'timeseries'),
-            ('error', 'histogram'),
-            [
-                ('ssd_read_latency', 'histogram'),
-                ('latency_ms', 'histogram'),
-            ],
-            [
-                ('ssd_read_latency', 'timeseries'),
-                ('ssd_read_latency', 'timeseries', 'max'),
-                ('ssd_read_latency', 'timeseries', 'min'),
-            ]
-        ],
-        "time": -3600, # default -3600
-        "bins": 40, # default 60
-        "left_margin": 40, # default 20
-    }
-    for s in dashboard(conf):
-        print(s)

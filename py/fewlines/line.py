@@ -9,7 +9,6 @@ horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 def _clamp(v, a ,b):
     return max(a, min(v, b))
 
-
 def bar_multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
     if not y:
         return [""], 0
