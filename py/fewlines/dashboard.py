@@ -81,7 +81,9 @@ if __name__ == '__main__':
                 ('ssd_read_latency', 'timeseries', {'agg': 'max'}),
                 ('ssd_read_latency', 'timeseries', {'agg': 'min'}),
             ],
-            ('ssd_read_latency', 'histogram', {'n_lines': 5, 'color': 'green'}),
+            ('ssd_read_latency', 'histogram', {'n_lines': 2, 'color': 'green'}),
+            ('ssd_read_latency', 'histogram', {'n_lines': 2, 'color': 'gray'}),
+            ('ssd_read_latency', 'histogram', {'n_lines': 2, 'color': None}),
         ],
         "time": -3600, # default -3600
         "bins": 40, # default 60

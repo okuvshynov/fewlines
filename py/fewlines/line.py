@@ -53,7 +53,26 @@ def line(y, max_y=None, cells=bar_blocks) -> str:
 colors = {
     'green': [-1, 150, 107, 22],
     'red'  : [-1, 196, 124, 52],
+    'gray' : [-1, 252, 248, 244, 240, 236],
 }
+
+def gen_horizon_blocks(n_lines, cells=horizon_blocks):
+    res = []
+    for i in range(n_lines):
+        lower = []
+        upper = []
+        
+        for j in range(i):
+            lower.append(cells[-1])
+        for j in range(i + 1, n_lines):
+            upper.append(cells[0])
+
+
+        # the one we are filling in now:
+        for b in cells[1:]:
+            res.append(lower + [b] + upper)
+
+    return res
 
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts
@@ -67,18 +86,18 @@ def horizon_multiline(y, n_lines=4, max_y=None, color='green', cells=horizon_blo
     bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
-    cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
-    n_cells = len(cells)
-    n_multicells = (n_lines - 1) * (n_cells - 1) + n_cells + 1
 
-    multicell_idx = lambda v: _clamp(int(v * n_multicells / max_y), 0, n_multicells - 1)
+    multiline_blocks = gen_horizon_blocks(n_lines, cells)
+    cells = [(f'{fg[1]}{bg[0]}',  [cells[0]] * n_lines)] + [(f'{f}{b}', mb) for f, b in zip(fg[1:], bg[:-1]) for mb in multiline_blocks]
+    n_cells = len(cells)
+
+    multicell_idx = lambda v: _clamp(int(v * n_cells / max_y), 0, n_cells - 1)
     idxs = [multicell_idx(v) for v in y]
 
     res = []
     for li in range(n_lines):
-        # this is max possible value (index) representable by all layers below current
-        below = (n_cells - 1) * (n_lines - li - 1)
-        res.append("".join([cells[_clamp(idx - below, 0, n_cells - 1)] for idx in idxs]))
+        fmt_cell = lambda idx: f'{cells[idx][0]}{cells[idx][1][n_lines - li - 1]}{rst}'
+        res.append("".join(fmt_cell(idx) for idx in idxs))
 
     return res, max_y
 
@@ -88,6 +107,7 @@ def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
 
 
 if __name__ == '__main__':
+    gen_horizon_blocks(3)
     for l in multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'], top_cells=[' ', '▄'])[0]:
         print(l)
 
