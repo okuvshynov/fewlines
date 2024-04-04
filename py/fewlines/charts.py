@@ -60,7 +60,7 @@ def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=
 # Some test examples; require numpy
 if __name__ == '__main__':
     import numpy as np
-    data = {'title_A': list(np.random.normal(size=10000))}
+    data = {'title_A': (np.random.normal(size=10000), {})}
     
     # horizon with colors
     for color in colors:
@@ -83,10 +83,10 @@ if __name__ == '__main__':
     for l in histogram_chart(data, bins=40, n_lines=8, color='green'):
         print(l)
 
-    for l in histogram_chart({'empty': []}, n_lines=1):
+    for l in histogram_chart({'empty': ([], {})}, n_lines=1):
         print(l)
     
-    for l in histogram_chart({'zero': [0]}, n_lines=1):
+    for l in histogram_chart({'zero': ([0], {})}, n_lines=1):
         print(l)
 
 # while probably not idiomatic, I like unit tests right where the code is. 
@@ -113,10 +113,10 @@ if __name__ == '__main__':
 
         def test_global_range(self):
             self.assertEqual(_global_range({}), (0.0, 0.0))
-            self.assertEqual(_global_range({'a': []}), (0.0, 0.0))
-            self.assertEqual(_global_range({'a': [1]}), (1.0, 1.0))
-            self.assertEqual(_global_range({'a': [1], 'b': []}), (1.0, 1.0))
-            self.assertEqual(_global_range({'a': [1], 'b': [2]}), (1.0, 2.0))
+            self.assertEqual(_global_range({'a': ([], {})}), (0.0, 0.0))
+            self.assertEqual(_global_range({'a': ([1], {})}), (1.0, 1.0))
+            self.assertEqual(_global_range({'a': ([1], {}), 'b': ([], {})}), (1.0, 1.0))
+            self.assertEqual(_global_range({'a': ([1], {}), 'b': ([2], {})}), (1.0, 2.0))
 
         def test_header(self):
             self.assertEqual(_header(-10, 10, 20, 0), "~~~~~~~~~~0~~~~~~~~~|10")
@@ -139,10 +139,10 @@ if __name__ == '__main__':
             self.assertEqual(_histogram([0, 1, 2], 1, 0, 2), [3])
 
         def test_bar_histograms(self):
-            self.assertEqual(histogram_chart({'A': [0], 'B': [1]}, 10, header=False, left_margin=0, n_lines=1), ["▇         |", "         ▇|"])
-            self.assertEqual(histogram_chart({'A': [0, 1], 'B': [1]}, 10, header=False, left_margin=0, n_lines=1), ["▇        ▇|", "         ▇|"])
-            self.assertEqual(histogram_chart({'A': [0, 1], 'B': [1]}, 10, left_margin=0, n_lines=1), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
-            self.assertEqual(histogram_chart({'A': [0, 1], 'B': [1]}, 10, left_margin=10, n_lines=1), ["~~~~~~~ 0|0~~~~~~~~~|1", "    A [1]|▇        ▇|", "    B [1]|         ▇|"])
+            self.assertEqual(histogram_chart({'A': ([0], {}), 'B': ([1], {})}, 10, header=False, left_margin=0, n_lines=1), ["▇         |", "         ▇|"])
+            self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, header=False, left_margin=0, n_lines=1), ["▇        ▇|", "         ▇|"])
+            self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, left_margin=0, n_lines=1), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
+            self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, left_margin=10, n_lines=1), ["~~~~~~~ 0|0~~~~~~~~~|1", "    A [1]|▇        ▇|", "    B [1]|         ▇|"])
 
 
     unittest.main()

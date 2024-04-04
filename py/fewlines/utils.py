@@ -24,7 +24,7 @@ def _histogram(data, bins, min_val, max_val):
 def _global_stat(numbers, fn):
     res = None
     if numbers:  # check if dictionary is not empty
-        non_empty_values = [fn(v) for v, _ in numbers.values() if v]
+        non_empty_values = [fn(v) for v, _ in numbers.values() if len(v) > 0]
         if non_empty_values:
             res = fn(non_empty_values) 
     return res
