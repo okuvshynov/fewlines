@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 import time
-from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines, horizon_line, horizon_multiline
+from fewlines.bar import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
 import math
 import random
 
@@ -74,7 +74,7 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, 
     return bar_histograms(values, bins=bins, header=True, left_margin=left_margin, color=color)
 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
-    return histogram_group([counter_name], bins, left_margin, offset_s, n_lines)
+    return histogram_group([(counter_name, )], bins, left_margin, offset_s, n_lines)
 
 chart_types = {
     'histogram': histogram_group,

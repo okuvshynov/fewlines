@@ -9,23 +9,10 @@ horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 def _clamp(v, a ,b):
     return max(a, min(v, b))
 
-# bar_line plots a line using provided blocks or default bar_blocks
-def bar_line(y, max_y=None, cells=bar_blocks) -> str:
-    if not y:
-        return "", 0
-
-    max_y = max(y) if max_y is None else max_y
-    if max_y == 0:
-        return cells[0] * len(y), 0
-    n_cells = len(cells)
-
-    clamp = lambda v, a, b: max(a, min(v, b))
-    cell = lambda v: cells[clamp(int(v * n_cells / max_y), 0, n_cells - 1)]
-    return ''.join([cell(v) for v in y]), max_y
 
 def bar_multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
     if not y:
-        return "", 0
+        return [""], 0
 
     max_y = max(y) if max_y is None else max_y
     if max_y == 0:
@@ -56,20 +43,16 @@ def bar_multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar
 
     return res, max_y
 
+def bar_line(y, max_y=None, cells=bar_blocks) -> str:
+    s, max_y = bar_multiline(y, n_lines=1, max_y=max_y, top_cells=cells)
+    return s[0], max_y
 
-# colorschemes
+
+# colorschemes in 256 ansi colors 
 colors = {
     'green': [-1, 150, 107, 22],
     'red'  : [-1, 196, 124, 52],
 }
-
-# horizon_line plots line using blocks and color - suitable for terminal output
-def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
-    bg = [f'\33[48;5;{c}m' if c >= 0 else '' for c in colors[color]]
-    fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
-    rst = '\33[0m'
-    cells = [f'{f}{b}{c}{rst}' for f, b in zip(fg[1:], bg[:-1]) for c in cells]
-    return bar_line(y, max_y=max_y, cells=cells)
 
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts
@@ -97,6 +80,10 @@ def horizon_multiline(y, n_lines=4, max_y=None, color='green', cells=horizon_blo
         res.append("".join([cells[_clamp(idx - below, 0, n_cells - 1)] for idx in idxs]))
 
     return res, max_y
+
+def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
+    s, max_y = horizon_multiline(y, n_lines=1, color=color, cells=cells) 
+    return s[0], max_y
 
 
 if __name__ == '__main__':

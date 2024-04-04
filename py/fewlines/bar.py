@@ -141,12 +141,16 @@ if __name__ == '__main__':
     for l in bar_histograms(data, bins=40):
         print(l)
 
-    # bar chart without colors
+    # bar chart without colors, spanning default 3 lines
     for l in bar_histograms_multiline(data, bins=40):
         print(l)
 
-    # bar chart without colors
+    # horizon with colors spanning default 3 lines
     for l in bar_histograms_multiline(data, bins=40, color='green'):
+        print(l)
+
+    # horizon with a lot of details
+    for l in bar_histograms_multiline(data, bins=40, n_lines=8, color='green'):
         print(l)
 
     for l in bar_histograms({'empty': []}):
