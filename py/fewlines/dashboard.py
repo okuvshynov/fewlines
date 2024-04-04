@@ -7,23 +7,11 @@ chart_types = {
     'timeseries': timeseries_group,
 }
 
-# TODO some autoconf - generate dashboard from everything we have?
-# some configuration shortcuts might include
-# adding chart by some prefix:
-#
-"""
-    conf = {
-        "charts": [('ssd_read_*', 'histogram')],
-    }
-"""
-
-
-
 def dashboard(config):
     # these are global settings, no override
     t = config.get("time", -3600)
     bins = config.get("bins", 60)
-    left_margin = config.get("left_margin", 20)
+    left_margin = config.get("left_margin", 30)
 
     # these can be overridden on chart level
     base_kvargs = {
@@ -43,17 +31,16 @@ def dashboard(config):
     for chart_group in config["charts"]:
         new_groups = []
         if not isinstance(chart_group, list):
-            
             # we had individual counter here. expand it as individual counters within their own group
             for counter_name in counter_expand(chart_group[0]):
                 new_groups.append([(counter_name, ) + chart_group[1:]])
         else:
             # we had a group of counters, expand them within the group
+            new_group = []
             for counter_name, chart_type, *args in chart_group:
-                new_group = []
                 for expanded_counter_name in counter_expand(counter_name):
                     new_group.append((expanded_counter_name, chart_type, *args))
-                new_groups.append(new_group)
+            new_groups.append(new_group)
 
         for new_group in new_groups:
             values = defaultdict(list)
@@ -108,7 +95,7 @@ if __name__ == '__main__':
         ],
         "time": -600, # default -3600
         "bins": 60, # default 60
-        "left_margin": 40, # default 20
+        "left_margin": 40, # default 30
         "n_lines": 3,
         "color": None,
     }
