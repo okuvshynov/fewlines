@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 import time
-from fewlines.charts import bar_histograms, bar_lines, bar_histograms_multiline, bar_multilines
+from fewlines.charts import histogram_chart, line_chart
 import math
 
 
@@ -54,9 +54,7 @@ def timeseries_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1,
                 continue
             counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value) 
         charts[f'{counter_name}.{agg}'] = list(reversed(values))
-    if n_lines > 1:
-        return bar_multilines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines, color=color)
-    return bar_lines(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin)
+    return line_chart(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines, color=color)
 
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg') -> str:
     return timeseries_group([(counter_name, agg)], bins, left_margin, offset_s)
@@ -69,9 +67,7 @@ def histogram_group(groups, bins=60, left_margin=20, offset_s=-3600, n_lines=1, 
         series = fewlines_data.get(counter_name, [])
         values[counter_name] = [v for t, v in series if t - offset_s > now]
     
-    if n_lines > 1:
-        return bar_histograms_multiline(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
-    return bar_histograms(values, bins=bins, header=True, left_margin=left_margin, color=color)
+    return histogram_chart(values, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1) -> str:
     return histogram_group([(counter_name, )], bins, left_margin, offset_s, n_lines)

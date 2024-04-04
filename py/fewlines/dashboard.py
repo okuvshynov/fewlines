@@ -18,8 +18,8 @@ def dashboard(config):
 
     title = config.get("title")
     if title is not None:
-        extra = max(0, w - len(title) - 3)
-        res.append("= " + title + " " + "=" * extra)
+        res.append("= " + title)
+        res.append("=" * w)
 
     for chart_group in config["charts"]:
         if not isinstance(chart_group, list):

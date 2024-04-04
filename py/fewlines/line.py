@@ -1,4 +1,6 @@
-# primitives to just write single line/multiple lines without any aggregation/bucketing
+# basic primitives to just write single line/multiple lines 
+# without any aggregation/bucketing
+# is the building block for charts.py
 
 # not using the largest block so that two histograms on two lines won't collide
 bar_blocks =      [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
@@ -9,7 +11,7 @@ horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 def _clamp(v, a ,b):
     return max(a, min(v, b))
 
-def bar_multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
+def multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
     if not y:
         return [""], 0
 
@@ -42,8 +44,8 @@ def bar_multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar
 
     return res, max_y
 
-def bar_line(y, max_y=None, cells=bar_blocks) -> str:
-    s, max_y = bar_multiline(y, n_lines=1, max_y=max_y, top_cells=cells)
+def line(y, max_y=None, cells=bar_blocks) -> str:
+    s, max_y = multiline(y, n_lines=1, max_y=max_y, top_cells=cells)
     return s[0], max_y
 
 
@@ -86,7 +88,7 @@ def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
 
 
 if __name__ == '__main__':
-    for l in bar_multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'], top_cells=[' ', '▄'])[0]:
+    for l in multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'], top_cells=[' ', '▄'])[0]:
         print(l)
 
     for l in horizon_multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'])[0]:
