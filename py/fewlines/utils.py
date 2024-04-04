@@ -37,7 +37,7 @@ def _global_range(numbers):
         mn, mx = 0.0, 0.0
     return mn, mx
 
-def _time_header(left_val, bins, left_margin):
+def _line_header(left_val, bins, left_margin):
     mn_text, mx_text = f' {left_val}|'[-left_margin:], 'now'
     
     line = '~' * bins

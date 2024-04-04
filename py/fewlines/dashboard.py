@@ -31,7 +31,7 @@ def dashboard(config):
                 values[chart].append((counter, *args))
         
         for chart_type, v in values.items():
-            res.extend(chart_types[chart_type](v, bins, left_margin, t, n_lines=2))
+            res.extend(chart_types[chart_type](v, bins, left_margin, t, n_lines=3))
         res.append("")
     return res
 
