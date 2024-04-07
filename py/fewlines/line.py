@@ -11,6 +11,7 @@ horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 def _clamp(v, a ,b):
     return max(a, min(v, b))
 
+# we use a shorter range of characters for the top line so that lines do not collide
 def multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
     if not y:
         return [""], 0
@@ -21,7 +22,7 @@ def multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blo
     n_cells = len(cells)
     n_top_cells = len(top_cells)
 
-    ##
+    #######
     # here's an example, imagine we have 3 blocks [' ', '▄', '█']
     # we need to take into account the lower level '█' + upper level ' ' represent same value. 
     # Example with 4 layers:
@@ -104,12 +105,3 @@ def horizon_multiline(y, n_lines=4, max_y=None, color='green', cells=horizon_blo
 def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
     s, max_y = horizon_multiline(y, n_lines=1, color=color, cells=cells) 
     return s[0], max_y
-
-
-if __name__ == '__main__':
-    gen_horizon_blocks(3)
-    for l in multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'], top_cells=[' ', '▄'])[0]:
-        print(l)
-
-    for l in horizon_multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'])[0]:
-        print(l)

@@ -1,5 +1,5 @@
-from fewlines.line import line, multiline, colors, horizon_line, horizon_multiline
-from fewlines.utils import _line_header, _global_range, _header, _histogram, _bin_index
+from fewlines.line import multiline, colors, horizon_multiline
+from fewlines.utils import _line_header, _global_range, _header, _histogram
 
 # charts we can format as lists of strings
 # supports histograms and lines, with different formatting
@@ -81,50 +81,3 @@ def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=
     res = [_header(mn, mx, bins=bins, left_margin=left_margin)] if header else []
     return res + _render_subplots(histograms, n_lines, left_margin, color)
 
-# Some test examples; require numpy
-if __name__ == '__main__':
-    import numpy as np
-    data = {'title_A': (np.random.normal(size=10000), {})}
-    
-    # horizon with colors
-    for color in colors:
-        for l in histogram_chart(data, bins=40, color=color, n_lines=1):
-            print(l)
-
-    # bar chart without colors
-    for l in histogram_chart(data, bins=40, n_lines=1):
-        print(l)
-
-    # bar chart without colors
-    for l in histogram_chart(data, bins=40):
-        print(l)
-
-    # horizon with colors
-    for l in histogram_chart(data, bins=40, color='green'):
-        print(l)
-
-    # horizon with a lot of details
-    for l in histogram_chart(data, bins=40, n_lines=8, color='green'):
-        print(l)
-
-    for l in histogram_chart({'empty': ([], {})}, n_lines=1):
-        print(l)
-    
-    for l in histogram_chart({'zero': ([0], {})}, n_lines=1):
-        print(l)
-
-
-    data2 = np.random.normal(size=1000)
-    # try all 4 ways to pass data:
-    print('just data w/o title and options')
-    for l in histogram_chart(data2):
-        print(l)
-    print('data w/o title with options')
-    for l in histogram_chart((data2, {'n_lines': 2})):
-        print(l)
-    print('dict data without options')
-    for l in histogram_chart({'B': data2}):
-        print(l)
-    print('dict data with options')
-    for l in histogram_chart({'B': (data2, {'n_lines': 2})}):
-        print(l)
