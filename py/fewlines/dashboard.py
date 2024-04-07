@@ -35,7 +35,7 @@ def dashboard(config):
             for counter_name in counter_expand(chart_group[0]):
                 new_groups.append([(counter_name, ) + chart_group[1:]])
         else:
-            # we had a group of counters, expand them within the group
+            # we had a group of counters, expand them within the common group
             new_group = []
             for counter_name, chart_type, *args in chart_group:
                 for expanded_counter_name in counter_expand(counter_name):

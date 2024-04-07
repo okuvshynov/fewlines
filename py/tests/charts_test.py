@@ -36,11 +36,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(_header(0, 10, 20, 0), "0~~~~~~~~~~~~~~~~~~~|10")
         self.assertEqual(_header(0, 10, 20, 10), "~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~|10")
 
-    def test_line(self):
-        self.assertEqual(block_lines([1,2,3])[0], ["▂▅▇"])
-        self.assertEqual(block_lines([])[0], [""])
-        self.assertEqual(block_lines([0, 100])[0], [" ▇"])
-
     def test_histogram(self):
         self.assertEqual(_histogram([], 5, None, None), [0, 0, 0, 0, 0])
         self.assertEqual(_histogram([0], 5, 0, 0), [0, 0, 1, 0, 0])

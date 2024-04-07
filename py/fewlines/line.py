@@ -15,7 +15,7 @@ def block_lines(y, n_lines=1, max_y=None):
     if n_lines < 1:
         return [], 0 
     if len(y) == 0:
-        return [""], 0
+        return [""] * n_lines, 0
 
 
     max_y = max(y) if max_y is None else max_y
@@ -79,7 +79,7 @@ def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_blocks)
     if n_lines < 1:
         return [], 0 
     if len(y) == 0:
-        return [""], 0
+        return [""] * n_lines, 0
 
     max_y = max(y) if max_y is None else max_y
     if max_y == 0:

@@ -1,4 +1,4 @@
-from fewlines.line import block_lines, colors, horizon_lines
+from fewlines.line import block_lines, horizon_lines
 from fewlines.utils import _line_header, _global_range, _header, _histogram
 
 # charts we can format as lists of strings
