@@ -2,7 +2,7 @@ import unittest
 
 from fewlines.line import block_lines
 
-class TestUtils(unittest.TestCase):
+class TestLines(unittest.TestCase):
     def test_line_basic(self):
         self.assertEqual(block_lines([1,2,3])[0], ["▂▅▇"])
         self.assertEqual(block_lines([])[0], [""])
