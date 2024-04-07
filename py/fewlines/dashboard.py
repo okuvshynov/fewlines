@@ -54,8 +54,8 @@ def dashboard(config):
             res.append("")
     return res
 
-def histograms(pattern):
-    return dashboard({"charts": [(pattern, 'histogram')],})
+def histograms(pattern, color=None, n_lines=1):
+    return dashboard({"charts": [(pattern, 'histogram')], 'color': color, 'n_lines': n_lines})
 
-def timeseries(pattern):
-    return dashboard({"charts": [(pattern, 'timeseries')],})
+def timeseries(pattern, color=None, n_lines=1):
+    return dashboard({"charts": [(pattern, 'timeseries')], 'color': color, 'n_lines': n_lines})

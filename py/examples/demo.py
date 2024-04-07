@@ -2,10 +2,10 @@ import time
 
 import numpy as np
 
-from fewlines.charts import colors, histogram_chart, line_chart
+from fewlines.charts import histogram_chart, line_chart
 from fewlines import metrics as fm
 from fewlines import dashboard as fd
-from fewlines.line import block_lines, horizon_lines
+from fewlines.line import block_lines, horizon_lines, colors 
 import fewlines.metrics as fm
 
 def demo_lines():
@@ -102,6 +102,13 @@ def demo_dashboard():
         print(s)
 
     for s in fd.timeseries('*latency'):
+        print(s)
+
+    print("\n## one-line dashboards with wildcard metrics selection and using horizon")
+    for s in fd.histograms('*latency', color='green'):
+        print(s)
+
+    for s in fd.timeseries('*latency', color='green'):
         print(s)
 
     print()
