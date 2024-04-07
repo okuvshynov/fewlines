@@ -65,11 +65,15 @@ def _to_canonical(numbers):
     # assume it is a list
     return {'': (numbers, {})}
 
-def line_chart(numbers, bins, left_val, header=True, left_margin=20, n_lines=1, color=None):
+# if bins is None, autodetect length from numbers
+def line_chart(numbers, bins=None, left_label="", right_label="", header=True, left_margin=20, n_lines=1, color=None):
     numbers = _to_canonical(numbers)
+    if bins is None:
+        if len(numbers) > 0:
+            bins = len(next(iter(numbers.values()))[0])
 
     # TODO: this header is specifically for timeseries, not line chart
-    res = [_line_header(left_val, bins, left_margin)] if header else []
+    res = [_line_header(left_label, right_label, bins, left_margin)] if header else []
     return res + _render_subplots(numbers, n_lines, left_margin, color)
 
 def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=1, color=None):

@@ -12,8 +12,11 @@ def _clamp(v, a ,b):
 
 # we use a shorter range of characters for the top line so that lines do not collide
 def block_lines(y, n_lines=1, max_y=None):
-    if not y or n_lines < 1:
-        return [], 0
+    if n_lines < 1:
+        return [], 0 
+    if len(y) == 0:
+        return [""], 0
+
 
     max_y = max(y) if max_y is None else max_y
     if max_y == 0:
@@ -73,8 +76,10 @@ def gen_horizon_blocks(n_lines, cells=horizon_blocks):
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts
 def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_blocks):
-    if not y:
-        return "", 0
+    if n_lines < 1:
+        return [], 0 
+    if len(y) == 0:
+        return [""], 0
 
     max_y = max(y) if max_y is None else max_y
     if max_y == 0:

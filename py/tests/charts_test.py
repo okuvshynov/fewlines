@@ -38,7 +38,7 @@ class TestUtils(unittest.TestCase):
 
     def test_line(self):
         self.assertEqual(block_lines([1,2,3])[0], ["▂▅▇"])
-        self.assertEqual(block_lines([])[0], [])
+        self.assertEqual(block_lines([])[0], [""])
         self.assertEqual(block_lines([0, 100])[0], [" ▇"])
 
     def test_histogram(self):

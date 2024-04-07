@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from fewlines.charts import colors, histogram_chart
+from fewlines.charts import colors, histogram_chart, line_chart
 from fewlines import metrics as fm
 from fewlines import dashboard as fd
 from fewlines.line import block_lines, horizon_lines
@@ -16,8 +16,13 @@ def demo_lines():
         print(l)
 
 def demo_charts():
+    print()
+    print("HISTOGRAM CHART DEMO")
+
     data = {'title_A': (np.random.normal(size=10000), {})}
+    small_data = np.random.normal(size=50)
     
+
     # horizon with colors
     for color in colors:
         for l in histogram_chart(data, bins=40, color=color, n_lines=1):
@@ -61,13 +66,38 @@ def demo_charts():
     for l in histogram_chart({'B': (data2, {'n_lines': 2})}):
         print(l)
 
+    print()
+    print('LINECHART DEMO')
+    for l in line_chart(small_data):
+        print(l)
+    
+    for l in line_chart(small_data, left_label=min(small_data), right_label=max(small_data)):
+        print(l)
+
+    for l in line_chart({'tiny!': small_data}, left_label=min(small_data), right_label=max(small_data), n_lines=3):
+        print(l)
+
+    for l in line_chart({'tiny!': small_data}, left_label=min(small_data), right_label=max(small_data), n_lines=3, color='green'):
+        print(l)
+
+    for l in line_chart([]):
+        print(l)
+    for l in line_chart([], color='green'):
+        print(l)
+    for l in line_chart([], n_lines=3):
+        print(l)
+    for l in line_chart([], color='green', n_lines=3):
+        print(l)
+
 def demo_dashboard():
+    print()
+    print("DASHBOARD DEMO")
     for i, v in enumerate(np.random.lognormal(mean=1.0, sigma=0.7, size=1000)):
         fm.add('ssd_read_latency', v, time.time() - i)
     for i, v in enumerate(np.random.lognormal(mean=3.0, sigma=0.7, size=1500)):
         fm.add('nw_recv_latency', v, time.time() - i)
 
-    print("\n## Default one-line dashboards with wildcard")
+    print("\n## one-line dashboards with wildcard metrics selection")
     for s in fd.histograms('*latency'):
         print(s)
 
@@ -109,6 +139,8 @@ def demo_dashboard():
         print(s)
 
 def demo_metrics():
+    print()
+    print("METRICS DEMO")
     fm.add('latency_ms', 1.2)
     fm.add('latency_ms', 1.3)
     fm.add('latency_ms', 1.4)

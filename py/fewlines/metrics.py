@@ -66,7 +66,7 @@ def timeseries_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=
                 continue
             counts[bin], values[bin] = aggregation[agg](counts[bin], values[bin], value)
         charts[f'{counter_name}.{agg}'] = (list(reversed(values)), args)
-    return line_chart(charts, bins, f'-{bins * bin_size_s}s', left_margin=left_margin, n_lines=n_lines, color=color)
+    return line_chart(charts, bins, left_label=f'-{bins * bin_size_s}s', right_label='now', left_margin=left_margin, n_lines=n_lines, color=color)
 
 def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
     now = time.time()

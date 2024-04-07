@@ -37,8 +37,8 @@ def _global_range(numbers):
         mn, mx = 0.0, 0.0
     return mn, mx
 
-def _line_header(left_val, bins, left_margin):
-    mn_text, mx_text = f' {left_val}|'[-left_margin:], 'now'
+def _line_header(left_label, right_label, bins, left_margin):
+    mn_text, mx_text = f' {left_label}|'[-left_margin:], right_label
     
     line = '~' * bins
     
