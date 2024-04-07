@@ -5,13 +5,13 @@ import numpy as np
 from fewlines.charts import colors, histogram_chart
 from fewlines import metrics as fm
 from fewlines import dashboard as fd
-from fewlines.line import multiline, horizon_multiline
+from fewlines.line import block_lines, horizon_lines
 
 def demo_lines():
-    for l in multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'], top_cells=[' ', '▄'])[0]:
+    for l in block_lines([i for i in range(100)], n_lines=4)[0]:
         print(l)
 
-    for l in horizon_multiline([i for i in range(100)], n_lines=4, cells=[' ', '▄', '█'])[0]:
+    for l in horizon_lines([i for i in range(100)], n_lines=4)[0]:
         print(l)
 
 def demo_charts():

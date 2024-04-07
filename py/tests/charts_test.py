@@ -2,7 +2,7 @@ import unittest
 
 from fewlines.utils import _bin_index, _global_range, _header
 from fewlines.charts import _histogram, histogram_chart
-from fewlines.line import line
+from fewlines.line import block_lines
 
 class TestUtils(unittest.TestCase):
     def test_bin_index(self):
@@ -37,9 +37,9 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(_header(0, 10, 20, 10), "~~~~~~~ 0|0~~~~~~~~~~~~~~~~~~~|10")
 
     def test_line(self):
-        self.assertEqual(line([1,2,3])[0], "▂▅▇")
-        self.assertEqual(line([])[0], "")
-        self.assertEqual(line([0, 100])[0], " ▇")
+        self.assertEqual(block_lines([1,2,3])[0], ["▂▅▇"])
+        self.assertEqual(block_lines([])[0], [])
+        self.assertEqual(block_lines([0, 100])[0], [" ▇"])
 
     def test_histogram(self):
         self.assertEqual(_histogram([], 5, None, None), [0, 0, 0, 0, 0])

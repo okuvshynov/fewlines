@@ -2,10 +2,8 @@
 # without any aggregation/bucketing
 # is the building block for charts.py
 
-# not using the largest block so that two histograms on two lines won't collide
-bar_blocks =      [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
-bar_blocks_full = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
-
+top_cells = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
+cells     = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 # For horizon we need to use the largest block, as we'll use color coding
 horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
@@ -13,9 +11,9 @@ def _clamp(v, a ,b):
     return max(a, min(v, b))
 
 # we use a shorter range of characters for the top line so that lines do not collide
-def multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blocks):
-    if not y:
-        return [""], 0
+def block_lines(y, n_lines=1, max_y=None):
+    if not y or n_lines < 1:
+        return [], 0
 
     max_y = max(y) if max_y is None else max_y
     if max_y == 0:
@@ -46,10 +44,6 @@ def multiline(y, n_lines=4, max_y=None, cells=bar_blocks_full, top_cells=bar_blo
 
     return res, max_y
 
-def line(y, max_y=None, cells=bar_blocks) -> str:
-    s, max_y = multiline(y, n_lines=1, max_y=max_y, top_cells=cells)
-    return s[0], max_y
-
 
 # colorschemes in 256 ansi colors 
 colors = {
@@ -78,7 +72,7 @@ def gen_horizon_blocks(n_lines, cells=horizon_blocks):
 
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts
-def horizon_multiline(y, n_lines=4, max_y=None, color='green', cells=horizon_blocks):
+def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_blocks):
     if not y:
         return "", 0
 
@@ -102,7 +96,3 @@ def horizon_multiline(y, n_lines=4, max_y=None, color='green', cells=horizon_blo
         res.append("".join(fmt_cell(idx) for idx in idxs))
 
     return res, max_y
-
-def horizon_line(y, max_y=None, color='green', cells=horizon_blocks) -> str:
-    s, max_y = horizon_multiline(y, n_lines=1, color=color, cells=cells) 
-    return s[0], max_y

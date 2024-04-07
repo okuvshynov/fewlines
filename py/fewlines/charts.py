@@ -1,4 +1,4 @@
-from fewlines.line import multiline, colors, horizon_multiline
+from fewlines.line import block_lines, colors, horizon_lines
 from fewlines.utils import _line_header, _global_range, _header, _histogram
 
 # charts we can format as lists of strings
@@ -40,7 +40,7 @@ def _render_subplots(numbers, n_lines, left_margin, color):
     for title, (values, args) in numbers.items():
         current_color = args.get('color', color)
         current_n_lines = args.get('n_lines', n_lines)
-        lines, max_value = multiline(values, max_y=max_y, n_lines=current_n_lines) if current_color is None else horizon_multiline(values, color=current_color, max_y=max_y, n_lines=current_n_lines)
+        lines, max_value = block_lines(values, max_y=max_y, n_lines=current_n_lines) if current_color is None else horizon_lines(values, color=current_color, max_y=max_y, n_lines=current_n_lines)
         legend_renderer = _oneline_legend_render if current_n_lines == 1 else _multiline_legend_render
         res.extend(legend_renderer(lines, title, max_value, width=left_margin))
     return res
