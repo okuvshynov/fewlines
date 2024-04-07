@@ -1,6 +1,8 @@
 import unittest
 
-from fewlines.charts import _bin_index, _global_range, _header, line, _histogram, histogram_chart
+from fewlines.utils import _bin_index, _global_range, _header
+from fewlines.charts import _histogram, histogram_chart
+from fewlines.line import line
 
 class TestUtils(unittest.TestCase):
     def test_bin_index(self):

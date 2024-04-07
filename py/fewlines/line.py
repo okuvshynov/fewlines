@@ -5,7 +5,8 @@
 # not using the largest block so that two histograms on two lines won't collide
 bar_blocks =      [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
 bar_blocks_full = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
-# For horizon we can use the largest block, as we'll use color coding
+
+# For horizon we need to use the largest block, as we'll use color coding
 horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
 def _clamp(v, a ,b):
