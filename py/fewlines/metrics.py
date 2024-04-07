@@ -83,19 +83,3 @@ def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg',
 
 def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
     return histogram_group([(counter_name, {})], bins, left_margin, offset_s, n_lines=n_lines, color=color)
-
-if __name__ == '__main__':
-    add('latency_ms', 1.2)
-    add('latency_ms', 1.3)
-    add('latency_ms', 1.4)
-    add('latency_ms', 1.5)
-    add('latency_ms', 1.6)
-    add('latency_ms', 1.7)
-    add('latency_ms', 1.8)
-    for error in np.random.normal(size=10000):
-        add('error', error)
-
-    for h in timeseries('latency_ms', color='green', left_margin=40, n_lines=3):
-        print(h)
-    for h in histogram('latency_ms', n_lines=2):
-        print(h)

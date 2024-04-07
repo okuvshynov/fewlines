@@ -6,6 +6,7 @@ from fewlines.charts import colors, histogram_chart
 from fewlines import metrics as fm
 from fewlines import dashboard as fd
 from fewlines.line import block_lines, horizon_lines
+import fewlines.metrics as fm
 
 def demo_lines():
     for l in block_lines([i for i in range(100)], n_lines=4)[0]:
@@ -107,7 +108,24 @@ def demo_dashboard():
     for s in fd.dashboard(conf):
         print(s)
 
+def demo_metrics():
+    fm.add('latency_ms', 1.2)
+    fm.add('latency_ms', 1.3)
+    fm.add('latency_ms', 1.4)
+    fm.add('latency_ms', 1.5)
+    fm.add('latency_ms', 1.6)
+    fm.add('latency_ms', 1.7)
+    fm.add('latency_ms', 1.8)
+    for error in np.random.normal(size=10000):
+        fm.add('error', error)
+
+    for h in fm.timeseries('latency_ms', color='green', left_margin=40, n_lines=3):
+        print(h)
+    for h in fm.histogram('latency_ms', n_lines=2):
+        print(h)
+
 if __name__ == '__main__':
     demo_lines()
     demo_charts()
     demo_dashboard()
+    demo_metrics()
