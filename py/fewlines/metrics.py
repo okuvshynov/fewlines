@@ -10,6 +10,8 @@ from functools import partial
 default_maxlen = 16384
 fewlines_data = defaultdict(partial(deque, maxlen=default_maxlen))
 
+# TODO: aggregation on add, so that we can not waste space
+# maybe need to support some form of tdigest for percentiles
 def add(counter_name, value, timestamp=None, aggregation=None):
     timestamp = time.time() if timestamp is None else timestamp
     fewlines_data[counter_name].append((timestamp, value))
@@ -71,7 +73,7 @@ def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1
     charts = {}
     for counter_name, args in counters:
         series = fewlines_data.get(counter_name, [])
-        # TODO: values in future?
+        # TODO: values in the future?
         charts[counter_name] = ([v for t, v in series if t - offset_s >= now], args)
     
     return histogram_chart(charts, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
