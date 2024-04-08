@@ -163,6 +163,12 @@ def demo_metrics():
     for h in fm.histogram('latency_ms', n_lines=2):
         print(h)
 
+    for h in fm.histogram('error', color='green'):
+        print(h)
+
+    for h in fm.histogram('error', color='gray', custom_range=(-10, 10), n_lines=3):
+        print(h)
+
 if __name__ == '__main__':
     demo_lines()
     demo_charts()

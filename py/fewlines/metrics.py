@@ -68,7 +68,7 @@ def timeseries_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=
         charts[f'{counter_name}.{agg}'] = (list(reversed(values)), args)
     return line_chart(charts, bins, left_label=f'-{bins * bin_size_s}s', right_label='now', left_margin=left_margin, n_lines=n_lines, color=color)
 
-def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
+def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None, custom_range=None) -> str:
     now = time.time()
     charts = {}
     for counter_name, args in counters:
@@ -76,10 +76,10 @@ def histogram_group(counters, bins=60, left_margin=20, offset_s=-3600, n_lines=1
         # TODO: values in the future?
         charts[counter_name] = ([v for t, v in series if t - offset_s >= now], args)
     
-    return histogram_chart(charts, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color)
+    return histogram_chart(charts, bins=bins, header=True, left_margin=left_margin, n_lines=n_lines, color=color, custom_range=custom_range)
 
 def timeseries(counter_name, bins=60, left_margin=20, offset_s=-3600, agg='avg', n_lines=1, color=None) -> str:
     return timeseries_group([(counter_name, {'agg': agg})], bins, left_margin, offset_s, n_lines=n_lines, color=color)
 
-def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None) -> str:
-    return histogram_group([(counter_name, {})], bins, left_margin, offset_s, n_lines=n_lines, color=color)
+def histogram(counter_name, bins=60, left_margin=20, offset_s=-3600, n_lines=1, color=None, custom_range=None) -> str:
+    return histogram_group([(counter_name, {})], bins, left_margin, offset_s, n_lines=n_lines, color=color, custom_range=custom_range)
