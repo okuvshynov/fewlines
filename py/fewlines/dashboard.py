@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from fewlines.metrics import histogram_group, timeseries_group, add, counter_expand
+from fewlines.metrics import histogram_group, timeseries_group, counter_expand
 
 chart_types = {
     'histogram': histogram_group,

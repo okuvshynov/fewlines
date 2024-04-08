@@ -1,4 +1,3 @@
-import numpy as np
 import time
 from fewlines.charts import histogram_chart, line_chart
 import math
