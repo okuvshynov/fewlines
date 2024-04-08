@@ -5,7 +5,7 @@
 top_cells = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇']
 cells     = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 # For horizon we need to use the largest block, as we'll use color coding
-horizon_blocks = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
+horizon_cells = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
 def _clamp(v, a ,b):
     return max(a, min(v, b))
@@ -55,7 +55,7 @@ colors = {
     'gray' : [-1, 252, 248, 244, 240, 236],
 }
 
-def gen_horizon_blocks(n_lines, cells=horizon_blocks):
+def gen_horizon_cells(n_lines, cells=horizon_cells):
     res = []
     for i in range(n_lines):
         lower = []
@@ -75,7 +75,7 @@ def gen_horizon_blocks(n_lines, cells=horizon_blocks):
 
 # for horizon multiline it might be a good idea to leave 
 # one entire line empty in case of adjacent horizon charts
-def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_blocks):
+def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_cells):
     if n_lines < 1:
         return [], 0 
     if len(y) == 0:
@@ -88,7 +88,7 @@ def horizon_lines(y, n_lines=1, max_y=None, color='green', cells=horizon_blocks)
     fg = [f'\33[38;5;{c}m' if c >= 0 else '' for c in colors[color]]
     rst = '\33[0m'
 
-    multiline_blocks = gen_horizon_blocks(n_lines, cells)
+    multiline_blocks = gen_horizon_cells(n_lines, cells)
     cells = [(f'{fg[1]}{bg[0]}',  [cells[0]] * n_lines)] + [(f'{f}{b}', mb) for f, b in zip(fg[1:], bg[:-1]) for mb in multiline_blocks]
     n_cells = len(cells)
 

@@ -17,10 +17,10 @@ class TestCharts(unittest.TestCase):
         self.assertEqual(_histogram([0, 1, 2], 1, 0, 2), [3])
 
     def test_bar_histograms(self):
-        self.assertEqual(histogram_chart({'A': ([0], {}), 'B': ([1], {})}, 10, header=False, left_margin=0, n_lines=1), ["▇         |", "         ▇|"])
-        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, header=False, left_margin=0, n_lines=1), ["▇        ▇|", "         ▇|"])
-        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, left_margin=0, n_lines=1), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
-        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, left_margin=10, n_lines=1), ["~~~~~~~ 0|0~~~~~~~~~|1", "    A [1]|▇        ▇|", "    B [1]|         ▇|"])
+        self.assertEqual(histogram_chart({'A': ([0], {}), 'B': ([1], {})}, 10, header=False, title_width=0, n_lines=1), ["▇         |", "         ▇|"])
+        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, header=False, title_width=0, n_lines=1), ["▇        ▇|", "         ▇|"])
+        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, title_width=0, n_lines=1), ["0~~~~~~~~~|1", "▇        ▇|", "         ▇|"])
+        self.assertEqual(histogram_chart({'A': ([0, 1], {}), 'B': ([1], {})}, 10, title_width=10, n_lines=1), ["~~~~~~~ 0|0~~~~~~~~~|1", "    A [1]|▇        ▇|", "    B [1]|         ▇|"])
 
 if __name__ == '__main__':
     unittest.main()

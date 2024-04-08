@@ -34,7 +34,7 @@ def _oneline_legend_render(lines, title, max_value, width):
     right = '|'
     return [left + lines[0] + right]
 
-def _render_subplots(numbers, n_lines, left_margin, color):
+def _render_subplots(numbers, n_lines, title_width, color):
     res = []
     _, max_y = _global_range(numbers)
     for title, (values, args) in numbers.items():
@@ -42,7 +42,7 @@ def _render_subplots(numbers, n_lines, left_margin, color):
         current_n_lines = args.get('n_lines', n_lines)
         lines, max_value = block_lines(values, max_y=max_y, n_lines=current_n_lines) if current_color is None else horizon_lines(values, color=current_color, max_y=max_y, n_lines=current_n_lines)
         legend_renderer = _oneline_legend_render if current_n_lines == 1 else _multiline_legend_render
-        res.extend(legend_renderer(lines, title, max_value, width=left_margin))
+        res.extend(legend_renderer(lines, title, max_value, width=title_width))
     return res
 
 
@@ -66,22 +66,22 @@ def _to_canonical(numbers):
     return {'': (numbers, {})}
 
 # if bins is None, autodetect length from numbers
-def line_chart(numbers, bins=None, left_label="", right_label="", header=True, left_margin=20, n_lines=1, color=None):
+def line_chart(numbers, bins=None, left_label="", right_label="", header=True, title_width=20, n_lines=1, color=None):
     numbers = _to_canonical(numbers)
     if bins is None:
         if len(numbers) > 0:
             bins = len(next(iter(numbers.values()))[0])
 
     # TODO: this header is specifically for timeseries, not line chart
-    res = [_line_header(left_label, right_label, bins, left_margin)] if header else []
-    return res + _render_subplots(numbers, n_lines, left_margin, color)
+    res = [_line_header(left_label, right_label, bins, title_width)] if header else []
+    return res + _render_subplots(numbers, n_lines, title_width, color)
 
-def histogram_chart(numbers, bins=60, header=True, left_margin=20, custom_range=None, n_lines=1, color=None):
+def histogram_chart(numbers, bins=60, header=True, title_width=20, custom_range=None, n_lines=1, color=None):
     # here mn, mx represent the min and max of values
     numbers = _to_canonical(numbers)
     mn, mx = custom_range if custom_range is not None else _global_range(numbers)
     histograms = {k: (_histogram(v, bins, mn, mx), args) for k, (v, args) in numbers.items()}
 
-    res = [_header(mn, mx, bins=bins, left_margin=left_margin)] if header else []
-    return res + _render_subplots(histograms, n_lines, left_margin, color)
+    res = [_header(mn, mx, bins=bins, title_width=title_width)] if header else []
+    return res + _render_subplots(histograms, n_lines, title_width, color)
 

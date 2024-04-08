@@ -37,21 +37,21 @@ def _global_range(numbers):
         mn, mx = 0.0, 0.0
     return mn, mx
 
-def _line_header(left_label, right_label, bins, left_margin):
-    mn_text, mx_text = f' {left_label}|'[-left_margin:], right_label
+def _line_header(left_label, right_label, bins, title_width):
+    mn_text, mx_text = f' {left_label}|'[-title_width:], right_label
     
     line = '~' * bins
     
-    if left_margin <= 0:
+    if title_width <= 0:
         return line + f'|{mx_text}'
-    return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
+    return '~' * (title_width - len(mn_text)) + mn_text + line + f'|{mx_text}'
 
-def _header(mn, mx, bins, left_margin, show_zero=True):
-    mn_text, mx_text = f' {mn:.3g}|'[-left_margin:], f'{mx:.3g}'
+def _header(mn, mx, bins, title_width, show_zero=True):
+    mn_text, mx_text = f' {mn:.3g}|'[-title_width:], f'{mx:.3g}'
     
     zero_at = _bin_index(mn, mx, bins, 0.0) if mn <= 0 and mx >= 0 and show_zero else None
     line = ''.join(['0' if b == zero_at else '~' for b in range(bins)])
     
-    if left_margin <= 0:
+    if title_width <= 0:
         return line + f'|{mx_text}'
-    return '~' * (left_margin - len(mn_text)) + mn_text + line + f'|{mx_text}'
+    return '~' * (title_width - len(mn_text)) + mn_text + line + f'|{mx_text}'

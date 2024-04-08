@@ -125,7 +125,7 @@ conf = {
     ],
     "time": -600, # default -3600
     "bins": 60, # default 60
-    "left_margin": 40, # default 30
+    "title_width": 40, # default 30
     "n_lines": 3,
     "color": None,
 }

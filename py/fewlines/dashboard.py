@@ -11,7 +11,7 @@ def dashboard(config):
     # these are global settings, no override
     t = config.get("time", -3600)
     bins = config.get("bins", 60)
-    left_margin = config.get("left_margin", 30)
+    title_width = config.get("title_width", 30)
 
     # these can be overridden on chart level
     base_kvargs = {
@@ -21,7 +21,7 @@ def dashboard(config):
     
     title = config.get("title")
 
-    w = bins + left_margin + 1
+    w = bins + title_width + 1
     res = ["=" * w]
 
     if title is not None:
@@ -50,7 +50,7 @@ def dashboard(config):
                     values[chart_type].append((counter, {**base_kvargs, **kvargs}))
             
             for chart_type, counters in values.items():
-                res.extend(chart_types[chart_type](counters, bins, left_margin, t))
+                res.extend(chart_types[chart_type](counters, bins, title_width, t))
             res.append("")
     return res
 

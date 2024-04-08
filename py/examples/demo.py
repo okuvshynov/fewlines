@@ -137,7 +137,7 @@ def demo_dashboard():
         ],
         "time": -600, # default -3600
         "bins": 60, # default 60
-        "left_margin": 25, # default 30
+        "title_width": 25, # default 30
         "n_lines": 3,
         "color": None,
     }
@@ -158,7 +158,7 @@ def demo_metrics():
     for error in np.random.normal(size=10000):
         fm.add('error', error)
 
-    for h in fm.timeseries('latency_ms', color='green', left_margin=40, n_lines=3):
+    for h in fm.timeseries('latency_ms', color='green', title_width=40, n_lines=3):
         print(h)
     for h in fm.histogram('latency_ms', n_lines=2):
         print(h)
