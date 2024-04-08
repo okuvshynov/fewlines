@@ -22,7 +22,7 @@ def dashboard(config):
     title = config.get("title")
 
     w = bins + title_width + 1
-    res = ["=" * w]
+    res = []
 
     if title is not None:
         res.append("= " + title)
