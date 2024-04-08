@@ -5,7 +5,8 @@ import numpy as np
 from fewlines.charts import histogram_chart, line_chart
 from fewlines import metrics as fm
 from fewlines import dashboard as fd
-from fewlines.line import block_lines, horizon_lines, colors 
+from fewlines.line import block_lines, horizon_lines, colors
+from fewlines.timer import Timer
 import fewlines.metrics as fm
 
 def demo_lines():
@@ -169,8 +170,29 @@ def demo_metrics():
     for h in fm.histogram('error', color='gray', custom_range=(-10, 10), n_lines=3):
         print(h)
 
+def demo_timer():
+    print()
+    print("TIMER + METRICS DEMO")
+
+    def some_work():
+        # pretend to do some work here, that's what we'll measure.
+        sleep_for = np.random.lognormal(mean=1.0, sigma=0.3) / 1000.0
+        time.sleep(sleep_for)
+
+    for _ in range(500):
+        with Timer('lognormal_work'):
+            some_work()
+
+    for h in fm.histogram("lognormal_work"):
+        print(h)
+
+    for h in fm.histogram("lognormal_work", color='green'):
+        print(h)
+    
+
 if __name__ == '__main__':
     demo_lines()
     demo_charts()
     demo_dashboard()
     demo_metrics()
+    demo_timer()
