@@ -15,7 +15,6 @@ namespace fewlines {
 
 static_assert(__cplusplus >= 202002L, "fewlines requires C++ 20");
 
-
 // computes a + bin_size * bin_index and handles the case when bin_size * bin_index will overflow,
 // but result would fit.
 template<typename num_t> 

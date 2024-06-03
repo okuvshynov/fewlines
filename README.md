@@ -5,8 +5,8 @@ Whether we like it or not, we debug things by putting print statements around.
 `fewlines` is a supplement for this, allowing to plot bar charts which only take few lines in a terminal output, but can be a very useful piece of information.
 In a more extended form fewlines can be used for logging collections of charts in a dashboard-like form.
 
-Currently python
-c++ and js versions in progress and experimental.
+Currently python only.
+c++ version in progress and experimental.
 
 Requires Unicode block characters.
 Horizon-style color output requires terminal with 256 ANSI colors.
@@ -48,8 +48,6 @@ pip install fewlines
 
 
 ## Usage example
-
-
 
 ### Basic charts
 
